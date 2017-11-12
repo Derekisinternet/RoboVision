@@ -13,6 +13,7 @@ class HOGFeature {
     private:
         void preProcess(Mat mat);
         Mat deskew(Mat& img);
+        int _histSize
         int _cellSize;
 };
 

@@ -5,7 +5,8 @@
 using namespace cv;
 
 HOGFeature::HOGFeature() {
-	_cellSize = 8;
+	_histSize = 9; // number of histogram bins
+	_cellSize = 8; // block size for normalization
 }
 
 Mat HOGFeature::extract(Mat img) {
