@@ -1,0 +1,9 @@
+build:
+  - ./install_dependencies.sh
+  - ./makeCMakeLists.sh
+  - mkdir build && cd build
+  - cmake ..
+  - make
+
+test:
+  - ./roboVision -t
