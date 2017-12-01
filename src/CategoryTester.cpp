@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <time.h>
 #include "RoboVision/CategoryTester.h"
 #include "RoboVision/HandFeatureExtractor.h"
 
@@ -17,14 +18,20 @@ CategoryTester::CategoryTester() {
 }
 
 void CategoryTester::test(char* positives) {
+    const clock_t start = std::clock();
 	testPath(positives, true);
-	printResults();
+	const clock_t end = std::clock();
+    int clockTicks = end - start;
+    printResults(clockTicks);
 }
 
 void CategoryTester::test(char* positives, char* negatives) {
+    const clock_t start = std::clock();
 	testPath(positives, true);
 	testPath(negatives, false);
-	printResults();
+    const clock_t end = std::clock();
+    int clockTicks = end - start;
+	printResults(clockTicks);
 }
 
 // boolean 'match' tells the method if it's positive samples or 
@@ -128,7 +135,13 @@ bool CategoryTester::testImageFile(string file) {
     return matched;
 }
 
-void CategoryTester::printResults() {
+void CategoryTester::printResults(int ticks) {
+    printf("############################\n");
+    printf("#      TEST RESULTS        #\n");
+    printf("############################\n");
+    printf("Number of Processor clock ticks: %d\n", ticks);
+    float seconds = float(ticks)/CLOCKS_PER_SEC;
+    printf("Run Time: %f Seconds\n", seconds);
     printf("---INPUTS---\n");
 	printf("number of positive samples: %d\n", _posSamples);
 	printf("number of negative samples: %d\n", _negSamples);
