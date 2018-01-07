@@ -1,4 +1,7 @@
+# editor stuff:
 *.swp
+*.vscode
+
 # ignore build and lib dirs (including tutorial projects)
 build
 lib/*
