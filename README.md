@@ -7,9 +7,14 @@ A computer vision app that uses the OpenCV framework.
 ------
 
 * OpenCV [https://github.com/opencv/opencv]
-* Docker
+
 
 ## Setup
 ------
+### Linux (Debian)
+* run install_dependencies.sh 
 
+### Windows
+* install linux
+* run install_dependencies.sh
 
