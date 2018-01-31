@@ -13,8 +13,12 @@ using namespace cv;
 using namespace std;
 
 CategoryTester::CategoryTester() {
-	_posSamples = 0;
-	_negSamples = 0;
+	_posTrainSamples = 0;
+	_negTrainSamples = 0;
+    _posTestSamples = 0;
+    _negTestSamples = 0;
+    _falsePos = 0;
+    _falseNeg = 0;
 	_correct = 0;
 	_incorrect = 0;
 }
@@ -38,6 +42,7 @@ void CategoryTester::test(char* positives, char* negatives) {
 }
 
 void CategoryTester::testClassifier(char* positives, char* negatives) {
+    
     Classifier classy;
     
     printf("Gathering images . . .\n");
@@ -53,19 +58,22 @@ void CategoryTester::testClassifier(char* positives, char* negatives) {
     populateVectors(positives, positiveTrainVector, positiveTestVector);
     Util::debugPrint("CategoryTester::testClassifier", "Populating Negative vectors");
     populateVectors(negatives, negativeTrainVector, negativeTestVector);
+    
     // make sure negative images have the same dimensions as positives:
     Util::debugPrint("CategoryTester::testClassifier", "Sanitizing negative training inputs . . .\n");
     sanitizeNegatives(negativeTrainVector, positiveTrainVector[0]);
     printf("Sanitizing negative testing inputs . . .\n");
     sanitizeNegatives(negativeTestVector, positiveTestVector[0]);
     
-    _posSamples = (int)positiveTestVector.size();
-    _negSamples = (int)negativeTestVector.size();
+    _posTestSamples = (int)positiveTestVector.size();
+    _negTestSamples = (int)negativeTestVector.size();
+    _posTrainSamples = (int)positiveTrainVector.size();
+    _negTrainSamples = (int)negativeTrainVector.size();
     printf("Number of positive training examples: %zd\n", positiveTrainVector.size());
     printf("Number of negative training examples: %zd\n", negativeTrainVector.size());
     int numTrainings = ((int)positiveTrainVector.size() + (int)negativeTrainVector.size());
     printf("Total Number of training examples: %d\n", numTrainings );
-    printf("Number of test examples: %d\n", (_posSamples + _negSamples) );
+    printf("Number of test examples: %d\n", (_posTestSamples + _negTestSamples) );
 
     // Distill the image collections into feature sets:
     printf("\nExtracting features from training images . . .\n");
@@ -123,12 +131,17 @@ void CategoryTester::testClassifier(char* positives, char* negatives) {
              ( (foundObjects.size() == 0) && (testLabels[i] == -1) ) )
         {
             _correct++;
-            printf("CORRECT\n");
         } else {
             _incorrect++;
-            printf("INCORRECT\n");
-            printf("  EXPECTED CLASSIFICATION: %d\n", testLabels[i]);
-            printf("  FOUND OBJECTS: %zd\n", foundObjects.size());
+            // printf("INCORRECT\n");
+            // printf("  EXPECTED CLASSIFICATION: %d\n", testLabels[i]);
+            // printf("  FOUND OBJECTS: %zd\n", foundObjects.size());
+            if (testLabels[i] == 1) {
+                _falseNeg++;
+            }
+            else {
+                _falsePos++;
+            }
         }
     }
 }
@@ -143,7 +156,7 @@ void CategoryTester::populateVectors(char* folderPath,
 
     for (int i = 0; i < fileList.size(); i++) {
         Mat mat = imread(fileList[i], CV_LOAD_IMAGE_COLOR);
-        printf("Image columns: %d. rows: %d\n", mat.cols, mat.rows);
+        // printf("Image columns: %d. rows: %d\n", mat.cols, mat.rows);
         if (i % 3 == 0) {
             testOutput.push_back(mat);
         } else {
@@ -210,9 +223,9 @@ void CategoryTester::testPath(char* path, bool match) {
         case  1: {
             printf("Argument is a file. Testing . . . \n");
             if (match) {
-            	_posSamples++;
+            	_posTestSamples++;
             } else {
-            	_negSamples++;
+            	_negTestSamples++;
             };
             bool matched = testImageFile(path);
             if ((matched & match) | (!matched & !match)) {
@@ -226,9 +239,9 @@ void CategoryTester::testPath(char* path, bool match) {
             printf("Argument is a directory. Iterating . . .\n");
             vector<string> fileList = Util::getFileNames(path);
             if (match) {
-                _posSamples = fileList.size();
+                _posTestSamples = fileList.size();
             } else {
-                _negSamples = fileList.size();
+                _negTestSamples = fileList.size();
             }
             for(unsigned int i = 0; i < fileList.size(); i++) {
                 string fileStr = fileList[i];
@@ -271,13 +284,18 @@ void CategoryTester::printResults(int ticks) {
     float seconds = float(ticks)/CLOCKS_PER_SEC;
     printf("Run Time: %f Seconds\n", seconds);
     printf("---INPUTS---\n");
-    printf("Total inputs: %d\n", (_posSamples + _negSamples));
-	printf("number of positive test samples: %d\n", _posSamples);
-	printf("number of negative test samples: %d\n", _negSamples);
+    printf("Total training inputs: %d\n",(_posTrainSamples + _negTrainSamples) );
+    printf("Number of positive training samples: %d\n", _posTrainSamples);
+    printf("NUmber of negative trainging samples: %d\n", _negTrainSamples);
+    printf("Total test inputs: %d\n", (_posTestSamples + _negTestSamples));
+	printf("number of positive test samples: %d\n", _posTestSamples);
+	printf("number of negative test samples: %d\n", _negTestSamples);
     printf("---OUPUT---\n");
     printf("number of correct guesses: %d\n", _correct);
     printf("number of incorrect guesses: %d\n", _incorrect);
-    float percentage = getPercentage(_correct, _incorrect);
+    printf("  False positives: %d\n", _falsePos);
+    printf("  False negatives: %d\n", _falseNeg); 
+    float percentage = getPercentage(_correct, (_posTestSamples + _negTestSamples) );
     printf("Probability of correct guess: %f\n", percentage);
 }
 

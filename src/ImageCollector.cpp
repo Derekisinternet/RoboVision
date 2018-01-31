@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <regex>
 #include "RoboVision/ImageCollector.h"
+#include "RoboVision/Util.h"
 
 using namespace cv;
 using namespace std;
@@ -27,15 +28,28 @@ ImageCollector::ImageCollector() {
     _pt1.y = 0;
     _pt2.x = 0;
     _pt2.y = 0;
+    _established = false;
     _drawBound = false;
     _subFrameBox = false;
     _currentFrame = Mat();
     _WINDOW_NAME = "RoboVision Image Collector";
 }
 
+void ImageCollector::drawCenteredBox(int width, int height) {
+    printf("Frame dimensions: %d x %d\n", _currentFrame.cols, _currentFrame.rows);
+    if (width < _currentFrame.cols && height < _currentFrame.rows) {
+        _pt1.x = ((_currentFrame.cols - width)/2);
+        _pt1.y = ((_currentFrame.rows - height)/2);
+        _pt2.x = _pt1.x + width;
+        _pt2.y = _pt1.y + height;
+        _subFrameBox = true;
+    }
+    
+}
+
 int ImageCollector::collectorLoop(string folderName){
     
-    createDir(folderName);
+    getReady(folderName);
 
     //open webcam
     VideoCapture cap(0);
@@ -54,6 +68,11 @@ int ImageCollector::collectorLoop(string folderName){
                          (void *) this);
 
     const Scalar GREEN = Scalar(0,255,0);
+
+    if (_established) {
+        cap >> _currentFrame;
+        setBoxDimensions(folderName);
+    }
 
     for (;;) {
         cap >> _currentFrame;
@@ -80,7 +99,7 @@ int ImageCollector::collectorLoop(string folderName){
     return 0;
 }
 
-bool ImageCollector::createDir(string dirName) {
+bool ImageCollector::getReady(string dirName) {
     // if user didn't specify a classifier name, exit:
     if(dirName == ""){
         printf("No Object name specified.\n");
@@ -95,6 +114,7 @@ bool ImageCollector::createDir(string dirName) {
             int newIndex = getLastImageIndex(dirName);
             printf("folder already exists. Starting current index at %d\n", newIndex);
             _fileIndex = newIndex;
+            _established = true;
             return true;         
         } else {
             printf("Error creating folder: %s",  dirName.c_str());
@@ -103,6 +123,29 @@ bool ImageCollector::createDir(string dirName) {
     } else {
         printf("Created folder: %s\n",  dirName.c_str());
         return true;
+    }
+}
+
+void ImageCollector::setBoxDimensions(string dirName) {
+    DIR *dir;
+    struct dirent *entry;
+    if ((dir = opendir(dirName.c_str())) != NULL) {
+        char* name;
+        while ((entry = readdir(dir))) {
+            name = entry->d_name;
+            if (name[0] != '.') {
+                break;
+            }
+        }
+        printf("retrieving class dimensions from sample image: %s\n", name);
+        //append file name to folder to give us a filepath:
+        dirName.insert(dirName.end(), '/');
+        dirName.append(name);
+        Mat sample = imread(dirName, CV_LOAD_IMAGE_COLOR);
+        int width = sample.cols;
+        int height = (sample.rows + 1); // account for how crop() works. Look it up.
+        printf("sample image dimensions: %d x %d\n", width, height);
+        drawCenteredBox(width, height);
     }
 }
 
@@ -115,12 +158,8 @@ int ImageCollector::getLastImageIndex(string directory) {
         while ((entry = readdir(dir))) {
             char* name = entry->d_name;
             string s = name;
-            printf("found file: %s\n", name);
-            
             // extract int from filename string:
             int number = atoi(s.substr(0,-3).c_str());
-            printf("file number: %d\n", number);
-
             if (number > newIndex) {
                 newIndex = number;
             }
@@ -201,24 +240,28 @@ void ImageCollector::redraw() {
 Mat ImageCollector::crop() {
     // rectangle overlaps the top and left sides of the Mat,
     // so I gotta trim those sides:
+    // Also, copy the points so that we don't mess with the originals.
+    Point pt1 = _pt1;
+    Point pt2 = _pt2;
+
     if (_pt1.x < _pt2.x) {
         if (_pt1.y < _pt2.y) {
-            _pt1.x +=1;
-            _pt1.y +=1;
+            pt1.x +=1;
+            pt1.y +=1;
         } else {
-            _pt1.x +=1;
-            _pt2.y +=1;
+            pt1.x +=1;
+            pt2.y +=1;
         }
     } else {
         if (_pt1.y < _pt2.y) {
-            _pt1.y +=1;
-            _pt2.x +=1;
+            pt1.y +=1;
+            pt2.x +=1;
         } else {
-            _pt2.y +=1;
-            _pt2.x +=1;
+            pt2.y +=1;
+            pt2.x +=1;
         }
     }
-    Rect_<int> roi = Rect(_pt1, _pt2);
+    Rect_<int> roi = Rect(pt1, pt2);
     Mat output = Mat(_currentFrame, roi);
     return output;
 }

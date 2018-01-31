@@ -48,7 +48,7 @@ void parseFlags(int argc, char** argv) {
     int args = 0;
     while ((args = getopt(argc, argv, "c:dn:t:")) != -1) {
         switch(args) {
-            // collect sample images
+            // collect sample images for a Classifier
             case 'c': {
                 string arg = string(optarg);
                 if (arg.size() > 0) {
