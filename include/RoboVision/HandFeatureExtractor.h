@@ -4,6 +4,7 @@
 #ifndef HANDFEATUREEXTRACTOR_h
 #define HANDFEATUREEXTRACTOR_h
 
+// A way to detect hands using only Computer Vision.
 class HandFeatureExtractor {
 	public:
 		HandFeatureExtractor();

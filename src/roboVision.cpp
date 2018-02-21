@@ -93,14 +93,24 @@ void debugLoop() {
         exit (EXIT_FAILURE);
     }
     printf("Camera operational\n");
-    handFeatExt = HandFeatureExtractor();
+    // handFeatExt = HandFeatureExtractor();
+    Classifier classy = Classifier("HOGDescriptor_Saved");
+    
     for (;;) {    
         cap >> rawImage;
-        if (handFeatExt.detect(rawImage)) {
-            // TODO: something useful?
-            printf("Found a hand!\n");
-            handFeatExt.dump(rawImage);
+        // if (handFeatExt.detect(rawImage)) {
+        //     // TODO: something useful?
+        //     printf("Found a hand!\n");
+        //     handFeatExt.dump(rawImage);
+        // }
+        vector< Rect > detections;
+        vector< double > foundWeights;
+        classy.detectMultiScale(rawImage, detections, foundWeights);
+        for ( size_t j = 0; j < detections.size(); j++ ) {
+            Scalar color = Scalar( 0, foundWeights[j] * foundWeights[j] * 200, 0 );
+            rectangle( rawImage, detections[j], color, rawImage.cols / 400 + 1 );
         }
+
         imshow(windowName, rawImage);
         if (waitKey(30) == 27) {
             exit (0);

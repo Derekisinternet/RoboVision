@@ -33,8 +33,6 @@ void CategoryTester::test(char* positives) {
 
 void CategoryTester::test(char* positives, char* negatives) {
     const clock_t start = std::clock();
-	// testPath(positives, true);
-	// testPath(negatives, false);
     testClassifier(positives, negatives);
     const clock_t end = std::clock();
     int clockTicks = end - start;
@@ -44,8 +42,6 @@ void CategoryTester::test(char* positives, char* negatives) {
 void CategoryTester::testClassifier(char* positives, char* negatives) {
     
     Classifier classy;
-    
-    printf("Gathering images . . .\n");
     const clock_t start = std::clock();
    
     vector<Mat> positiveTrainVector, negativeTrainVector, trainGradientList;
@@ -58,33 +54,36 @@ void CategoryTester::testClassifier(char* positives, char* negatives) {
     populateVectors(positives, positiveTrainVector, positiveTestVector);
     Util::debugPrint("CategoryTester::testClassifier", "Populating Negative vectors");
     populateVectors(negatives, negativeTrainVector, negativeTestVector);
-    
-    // make sure negative images have the same dimensions as positives:
-    Util::debugPrint("CategoryTester::testClassifier", "Sanitizing negative training inputs . . .\n");
-    sanitizeNegatives(negativeTrainVector, positiveTrainVector[0]);
-    printf("Sanitizing negative testing inputs . . .\n");
-    sanitizeNegatives(negativeTestVector, positiveTestVector[0]);
-    
+
     _posTestSamples = (int)positiveTestVector.size();
     _negTestSamples = (int)negativeTestVector.size();
     _posTrainSamples = (int)positiveTrainVector.size();
     _negTrainSamples = (int)negativeTrainVector.size();
-    printf("Number of positive training examples: %zd\n", positiveTrainVector.size());
-    printf("Number of negative training examples: %zd\n", negativeTrainVector.size());
-    int numTrainings = ((int)positiveTrainVector.size() + (int)negativeTrainVector.size());
-    printf("Total Number of training examples: %d\n", numTrainings );
-    printf("Number of test examples: %d\n", (_posTestSamples + _negTestSamples) );
+    printf("Total training samples: %d\n", (_posTrainSamples + _negTrainSamples));
+    printf("    Positive examples: %d\n", _posTrainSamples);
+    printf("    Negative examples: %d\n", _negTrainSamples);
+    printf("Total test examples: %d\n", (_posTestSamples + _negTestSamples) );
+    printf("    Positive examples: %d\n", _posTestSamples);
+    printf("    Negative examples: %d\n", _negTestSamples);
+
+    // make sure negative images have the same dimensions as positives:
+    Util::debugPrint("CategoryTester::testClassifier", "Sanitizing negative training inputs . . .");
+    sanitizeNegatives(negativeTrainVector, positiveTrainVector[0]);
+    Util::debugPrint("CategoryTester::testClassifier", "Sanitizing negative testing inputs . . .");
+    sanitizeNegatives(negativeTestVector, positiveTestVector[0]);
 
     // Distill the image collections into feature sets:
-    printf("\nExtracting features from training images . . .\n");
-    trainGradientList.clear(); // make sure it's empty
-    classy.computeHOGs(positiveTrainVector, trainGradientList);
-    classy.computeHOGs(negativeTrainVector, trainGradientList);
-    printf("Total number of training feature examples: %zd\n", trainGradientList.size());
+    trainGradientList.clear(); // make sure output list is empty first
+    Util::debugPrint("CategoryTester::testClassifier", "Extracting features from positive training images . . .");
+    classy.generateHOGs(positiveTrainVector, trainGradientList);
+    Util::debugPrint("CategoryTester::testClassifier", "Extracting features from negative training images . . .");
+    classy.generateHOGs(negativeTrainVector, trainGradientList);
+    Util::debugPrint("CategoryTester::testClassifier", "Total number of training feature examples:");
+    printf("    %zd\n", trainGradientList.size());
     
     printf("Creating training labels . . . \n");
     trainLabels.clear();
-    trainLabels.assign( positiveTrainVector.size(), +1);
+    trainLabels.assign( positiveTrainVector.size(), 1);
     trainLabels.insert(trainLabels.end(), negativeTrainVector.size(), -1);
     printf("Total number of training labels: %zd\n", trainLabels.size());
 
@@ -93,7 +92,6 @@ void CategoryTester::testClassifier(char* positives, char* negatives) {
     convertToML(trainGradientList, trainingData);
 
     // Train the classifier
-    printf("Training Classifier . . .\n");
     Util::debugPrint("CategoryTester::testClassifier", "training classifier");
     classy.train(trainingData, trainLabels);
 
@@ -102,44 +100,51 @@ void CategoryTester::testClassifier(char* positives, char* negatives) {
     float seconds = float(clockTicks)/CLOCKS_PER_SEC;
     printf("Training Complete. Time Elapsed: %f Seconds\n", seconds);
 
-    printf("\nCreating test data set . . .\n");
-    classy.computeHOGs(positiveTestVector, testGradientList);
-    classy.computeHOGs(negativeTestVector, testGradientList);
-    printf("Number of test examples: %zd\n", testGradientList.size());
-
-    printf("Creating labels for test data . . .\n");
-    // create answer key for test data:
+    printf("\nCreating test data . . .\n");
     testLabels.clear();
-    testLabels.assign(positiveTestVector.size(), +1);
+    testLabels.assign(positiveTestVector.size(), 1);
     testLabels.insert(testLabels.end(), negativeTestVector.size(), -1);
-    printf("Total number of test labels: %zd\n", testLabels.size());
-    
-    printf("\nStart of Tests:\n");
+    // concat negative images and positivie images
+    positiveTestVector.insert(positiveTestVector.end(), negativeTestVector.begin(), negativeTestVector.end());
+    // printf("Total number of test labels: %zd\n", testLabels.size());
+
+    Util::debugPrint("CategoryTester::testClassifier","Start of Tests:");
     if (!classy.isTrained()) {
-        Util::debugPrint("CategoryTester::testClassifier", "Categorizer not trained. Returning.");
+        Util::errorPrint("CategoryTester::testClassifier", "Categorizer not trained. Returning.");
         return;
     }
-    HOGDescriptor hog;
-    hog.load("HOGDescriptor_Saved");
-   
-    // gather list of positive and negative Mats
-    positiveTestVector.insert(positiveTestVector.end(), negativeTestVector.begin(), negativeTestVector.end());
-    for (size_t i = 0; i < positiveTestVector.size(); i++ ){
-        vector<cv::Point> foundObjects;
-        hog.detect(positiveTestVector[i], foundObjects);
-        if ( ( (foundObjects.size() > 0) && (testLabels[i] == 1) ) || 
-             ( (foundObjects.size() == 0) && (testLabels[i] == -1) ) )
-        {
+
+    for (size_t i = 0; i < positiveTestVector.size(); i++) {
+        // vector<cv::Point> foundPoints = classy.detect(positiveTestVector[i]);
+        // if ( ( (foundPoints.size() > 0) && (testLabels[i] == 1) ) || 
+        //      ( (foundPoints.size() == 0) && (testLabels[i] == 0) ) )
+        // {
+        //     _correct++;
+        // } else {
+        //     _incorrect++;
+        //     printf("INCORRECT\n");
+        //     printf("  EXPECTED CLASSIFICATION: %d\n",testLabels[i]);
+        //     printf("  FOUND POINTS: %zd\n", foundPoints.size());
+        //     if (testLabels[i] == 1) {
+        //         _falseNeg++;
+        //     }
+        //     else {
+        //         _falsePos++;
+        //     }
+        // }
+        
+        // Util::debugPrint("CategoryTester::testClassifier", "getting svm guess");
+        float response = classy.classify(positiveTestVector[i]);
+        if (response == testLabels[i]) {
             _correct++;
         } else {
             _incorrect++;
-            // printf("INCORRECT\n");
-            // printf("  EXPECTED CLASSIFICATION: %d\n", testLabels[i]);
-            // printf("  FOUND OBJECTS: %zd\n", foundObjects.size());
+            printf("INCORRECT\n");
+            printf("  EXPECTED CLASSIFICATION: %d\n", testLabels[i]);
+            printf("  PREDICTION: %d\n", response);
             if (testLabels[i] == 1) {
                 _falseNeg++;
-            }
-            else {
+            } else {
                 _falsePos++;
             }
         }
@@ -152,11 +157,11 @@ void CategoryTester::populateVectors(char* folderPath,
     
     std::vector<std::string> fileList = Util::getFileNames(folderPath);
     Util::debugPrint("CategoryTester::populateVectors", "Number of files in folder path:");
-    printf("%zd\n", fileList.size());
+    int size = (int)fileList.size();
+    printf("%d\n", size);
 
-    for (int i = 0; i < fileList.size(); i++) {
+    for (size_t i = 0; i < size; i++) {
         Mat mat = imread(fileList[i], CV_LOAD_IMAGE_COLOR);
-        // printf("Image columns: %d. rows: %d\n", mat.cols, mat.rows);
         if (i % 3 == 0) {
             testOutput.push_back(mat);
         } else {
@@ -165,13 +170,12 @@ void CategoryTester::populateVectors(char* folderPath,
     }
 }
 
-void CategoryTester::sanitizeNegatives(vector<Mat> matVector, Mat reference) {
+void CategoryTester::sanitizeNegatives(vector<Mat> & matVector, Mat& reference) {
     int x = reference.cols;
     int y = reference.rows;
-    printf("reference image cols: %d, rows: %d\n", x, y);
+    Util::debugPrint("CategoryTester::sanitizeNegatives", "Trimming dimensions according to reference image:");
+    printf("  reference image cols: %d, rows: %d\n", x, y);
     for (int i = 0; i < matVector.size(); i++) {
-        //Mat oldMat = ;
-        printf("negative image cols: %d, rows: %d\n", matVector[i].cols, matVector[i].rows);
         Rect rect = Rect(0, 0, x, y);
         Mat newMat = matVector[i](rect);
         matVector[i] = newMat;
@@ -196,23 +200,6 @@ void CategoryTester::convertToML(const vector<Mat> & imageVector, Mat& trainData
             imageVector[i].copyTo( trainData.row( (int)i ) );
         }
     }
-}
-
-void CategoryTester::convertToML(const Mat hogFeature, Mat& svmInput) {
-    const int cols = (int)std::max( hogFeature.cols, hogFeature.rows );
-    Mat tmp( 1, cols, CV_32FC1 ); //< used for transposition if needed
-    svmInput = Mat( 1, cols, CV_32FC1 );
-
-    CV_Assert( hogFeature.cols == 1 || hogFeature.rows == 1 );
-
-    if( hogFeature.cols == 1 ) {
-        transpose( hogFeature, tmp );
-        tmp.copyTo( svmInput.row(0) );
-    }
-    else if(hogFeature.rows == 1 ) {
-        hogFeature.copyTo( svmInput.row(0) );
-    }
-
 }
 
 // boolean 'match' tells the method if it's positive samples or 

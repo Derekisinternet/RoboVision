@@ -34,7 +34,6 @@ int Util::isFile( char* name) {
 }
 
 std::vector<std::string> Util::getFileNames(char* dirPath) {
-    debugPrint("Util::getFileNames()", "opening dir . . .\n");
     std::vector<std::string> fileNames;
     DIR *dir = opendir(dirPath);
     struct dirent *ent;
