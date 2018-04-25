@@ -1,0 +1,17 @@
+pipelines:
+  general:
+    debug: true
+  tools:
+    branches:
+      patterns:
+        master: master
+        feature: .+
+    github:
+      credentials:
+        description: primary GitHub clone/checkout
+  branches:
+    feature:
+      - sh: 'make'
+      - sh: ./roboVision -test
+    master:
+      - sh: make
