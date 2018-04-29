@@ -132,7 +132,8 @@ void testLoop(char* filePath1, char* filePath2) {
 
 void printHelp() {
     printf("supported parameters:\n");
+    printf(" -c <name>           collect training images\n");
     printf(" -d                  debug mode\n");
     printf(" -t <file/dir path>  test mode\n");
-    printf(" -c <name>           collect training images\n");
+    
 }

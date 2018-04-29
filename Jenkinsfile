@@ -14,5 +14,7 @@
 
 library "workflowLibs@v0.6.0"
 
-plWorkflow { }
+plWorkflow {
+  notify = false
+}
 
