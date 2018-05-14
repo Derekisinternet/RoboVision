@@ -1,0 +1,24 @@
+pipelines:
+  general:
+    debug: true
+  tools:
+    branches:
+      patterns:
+        master: master
+        feature: .+
+    github:
+      credentials:
+        description: primary GitHub clone/checkout
+  branches:
+    feature:
+      steps:
+        - cmake:
+            cmake:
+              cMakeDir: '.'
+            make:
+              makeDir: '.'
+    master:
+      steps:
+        - cmake:
+            make:
+              makeDir: '.'

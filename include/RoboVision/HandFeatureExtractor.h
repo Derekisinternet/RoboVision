@@ -4,11 +4,12 @@
 #ifndef HANDFEATUREEXTRACTOR_h
 #define HANDFEATUREEXTRACTOR_h
 
+// A way to detect hands using only Computer Vision.
 class HandFeatureExtractor {
 	public:
 		HandFeatureExtractor();
-
-		bool detect(Mat mat);
+    	void dump(Mat mat);
+		bool detect(Mat image);
 
 	private:
 		Mat preProcess(Mat mat);
@@ -18,10 +19,12 @@ class HandFeatureExtractor {
 		float getDistance(Point p1, Point p2);
 		float getTriangleArea(Point p1, Point p2, float defectDepth);
 		float innerAngle (float px1, float py1, float px2, float py2, float cx1, float cy1);
-		
-		// TODO: pull out threshold values into config file.
-
 		Mat _rawImage;
+    	Hand _hand;
+		bool _validHand;
+
+
+		// TODO: pull out threshold values into config file.
 		int _minY;
 		int _maxY;
 		int _minCr;
@@ -30,10 +33,6 @@ class HandFeatureExtractor {
 		int _maxCb;
 		int _blurSize;
 		int _elementSize;
-
-		Hand _hand;
-		bool _validHand;
-
 };
 
 #endif

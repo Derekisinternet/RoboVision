@@ -90,3 +90,19 @@ float Hand::getTriangleArea(Point p1, Point p2, float defectDepth) {
     return (pow((base * defectDepth), 2)/2);
 }
 
+void Hand::debugPrint(Mat mat) {
+    //colors
+    const Scalar GREEN = Scalar(0,255,0);
+    const Scalar BLUE = Scalar(255,0,0);
+    const Scalar RED = Scalar(0,0,255);
+    
+    //draw a box around the convex
+    Rect boundingBox = boundingRect(_contour);
+    rectangle(mat, boundingBox, GREEN);
+
+    //draw circles at each fingertip
+    vector<Point> fingers = getFingertips();
+    for (size_t i = 0; i < fingers.size(); i++) {
+        circle(mat, fingers[i], 1, BLUE);
+    }
+}

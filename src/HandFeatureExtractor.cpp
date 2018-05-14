@@ -147,6 +147,11 @@ float HandFeatureExtractor::getTriangleArea(Point p1, Point p2, float defectDept
     return (pow((base * defectDepth), 2)/2);
 }
 
+void HandFeatureExtractor::dump(Mat mat) {
+    _hand.debugPrint(mat);
+}
+
+
 float HandFeatureExtractor::getDistance(Point p1, Point p2) {
     float p1x = float(p1.x);
     float p1y = float(p1.y);

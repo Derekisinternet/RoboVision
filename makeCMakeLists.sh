@@ -47,7 +47,7 @@ if [ $# -eq 0 ]
         fi
         printf "set(OpenCV_DIR $OPENCV_LOCATION)\n" >> $FILE
         printf 'find_package( OpenCV REQUIRED )\n' >> $FILE
-        printf "add_executable( $PROJECT ${SOURCES} )\n" >> $FILE
+        printf "add_executable( $PROJECT \${SOURCES} )\n" >> $FILE
         printf "add_definitions(-std=c++0x)\n" >> $FILE
         printf "target_link_libraries( $PROJECT" >> $FILE
         printf ' ${OpenCV_LIBS} )\n'  >> $FILE
