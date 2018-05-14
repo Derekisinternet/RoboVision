@@ -11,7 +11,12 @@ pipelines:
         description: primary GitHub clone/checkout
   branches:
     feature:
-      - sh: 'make'
-      - sh: ./roboVision -test
+      - cmake:
+          cmake:
+            cMakeDir: '.'
+          make:
+            makeDir: '.'
     master:
-      - sh: make
+      - cmake:
+          make:
+            makeDir: '.'
