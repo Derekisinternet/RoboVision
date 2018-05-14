@@ -11,12 +11,14 @@ pipelines:
         description: primary GitHub clone/checkout
   branches:
     feature:
-      - cmake:
-          cmake:
-            cMakeDir: '.'
-          make:
-            makeDir: '.'
+      steps:
+        - cmake:
+            cmake:
+              cMakeDir: '.'
+            make:
+              makeDir: '.'
     master:
-      - cmake:
-          make:
-            makeDir: '.'
+      steps:
+        - cmake:
+            make:
+              makeDir: '.'
