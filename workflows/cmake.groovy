@@ -14,3 +14,5 @@ public make(Map yml, Map args) {
   assert makeDir : "Workfkows :: cMake :: cMake :: [makeDir] needs to be defined."
   sh "cd ${makeDir} && make"
 }
+
+return this;
