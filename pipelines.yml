@@ -11,6 +11,9 @@ pipelines:
         description: primary GitHub clone/checkout
     cMake:
       container: robovision_test
+    tests:
+      executable: 'app/build/roboVision'
+      positiveSet: 'hand'
   branches:
     feature:
       steps:
@@ -24,6 +27,9 @@ pipelines:
               cMakeLists: CMakeLists.txt
             make:
               makeDir: 'app/build'
+        - tests:
+            test:
+
     master:
       steps:
         - cmake:

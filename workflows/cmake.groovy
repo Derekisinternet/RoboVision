@@ -6,7 +6,11 @@ public cMake(Map, yml, Map args) {
   String container  = args?.container  ?: yml?.tools?.cMake
 
   assert cMakeDir : "Workfkows :: cMake :: cMake :: [cMakeDir] needs to be defined."
-  sh "cd ${cMakeDir} && cmake ."
+  assert container : "Workfkows :: cMake :: cMake :: [container] needs to be defined."
+  
+  docker.image("$container").inside {
+    sh "cd ${cMakeDir} && cmake ."
+  }
 }
 
 public make(Map yml, Map args) {
@@ -14,7 +18,11 @@ public make(Map yml, Map args) {
   String container = args?.container ?: yml?.tools?.container
 
   assert makeDir : "Workfkows :: cMake :: cMake :: [makeDir] needs to be defined."
-  sh "cd ${makeDir} && make"
+  assert container : "Workfkows :: cMake :: cMake :: [container] needs to be defined."
+
+  docker.image("$container").inside {
+    sh "cd ${makeDir} && make"
+  }
 }
 
 return this;
