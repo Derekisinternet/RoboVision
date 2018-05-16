@@ -9,16 +9,23 @@ pipelines:
     github:
       credentials:
         description: primary GitHub clone/checkout
+    cMake:
+      container: robovision_test
   branches:
     feature:
       steps:
-        - cmake:
-            cmake:
-              cMakeDir: '.'
+        - docker:
+            build:
+              dockerfile: Dockerfile
+              name: robovision_test
+        - cMake:
+            cMake:
+              cMakeDir: 'app/build'
+              cMakeLists: CMakeLists.txt
             make:
-              makeDir: '.'
+              makeDir: 'app/build'
     master:
       steps:
         - cmake:
             make:
-              makeDir: '.'
+              makeDir: 'app/build'
