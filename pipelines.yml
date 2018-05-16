@@ -6,27 +6,31 @@ pipelines:
       patterns:
         master: master
         feature: .+
+    cMake:
+      container: robovision_test
     github:
       credentials:
         description: primary GitHub clone/checkout
-    cMake:
-      container: robovision_test
+      uri: "https://github.com/derekisinternet/RoboVision"
+    jenkins:
+      workflows: v0.5.0  
     tests:
-      executable: 'app/build/roboVision'
-      positiveSet: 'hand'
+      executable: app/build/roboVision
+      positiveSet: hand
+      negativeSet: negatives
   branches:
     feature:
       steps:
         - docker:
             build:
               dockerfile: Dockerfile
-              name: robovision_test
+              imageName: robovision_test
         - cMake:
             cMake:
-              cMakeDir: 'app/build'
+              cMakeDir: app/build
               cMakeLists: CMakeLists.txt
             make:
-              makeDir: 'app/build'
+              makeDir: app/build
         - tests:
             test:
 
