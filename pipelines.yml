@@ -24,20 +24,20 @@ pipelines:
     feature:
       steps:
         - docker:
-            build:
+          - build:
               dockerfile: Dockerfile
               imageName: robovision_test
         - cMake:
-            cMake:
+          - cMake:
               cMakeDir: app/build
               cMakeLists: CMakeLists.txt
-            make:
+          - make:
               makeDir: app/build
         - tests:
-            test:
+          - test:
 
     master:
       steps:
         - cmake:
-            make:
+          - make:
               makeDir: 'app/build'
