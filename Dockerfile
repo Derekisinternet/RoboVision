@@ -9,7 +9,7 @@ RUN apk add --update alpine-sdk cmake
 
 # install opencv
 RUN git clone https://github.com/opencv/opencv.git; cd opencv && \
-    mkdir -p opencv/release; cd opencv/release; \
+    mkdir -p release; cd release; \
     cmake -D CMAKE_BUILD_TYPE=release ..; \
     make
 
