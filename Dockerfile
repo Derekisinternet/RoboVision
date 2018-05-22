@@ -21,4 +21,4 @@ RUN cd  /app/build && \
     cmake -D CMAKE_INSTALL_PREFIX=/opencv/release .. && \
     make
 
-CMD ["/app/build/roboVision"]
+ENTRYPOINT ["/app/build"]
