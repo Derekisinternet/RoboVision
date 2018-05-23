@@ -20,7 +20,7 @@ public make(Map yml, Map args) {
   assert makeDir   : "Workfkows :: cMake :: cMake :: [makeDir] needs to be defined."
   assert container : "Workfkows :: cMake :: cMake :: [container] needs to be defined."
 
-  docker.image("$container").inside("--entyrpoint ''") {
+  docker.image("$container").inside("-u 0:0 --entyrpoint ''") {
     sh "cd ${makeDir} && make"
   }
 }
