@@ -8,7 +8,7 @@ public cMake(Map, yml, Map args) {
   assert cMakeDir  : "Workfkows :: cMake :: cMake :: [cMakeDir] needs to be defined."
   assert container : "Workfkows :: cMake :: cMake :: [container] needs to be defined."
   
-  docker.image("$container").inside {
+  docker.image("$container").inside("--entyrpoint ''") {
     sh "cd ${cMakeDir} && cmake ."
   }
 }
@@ -20,7 +20,7 @@ public make(Map yml, Map args) {
   assert makeDir   : "Workfkows :: cMake :: cMake :: [makeDir] needs to be defined."
   assert container : "Workfkows :: cMake :: cMake :: [container] needs to be defined."
 
-  docker.image("$container").inside {
+  docker.image("$container").inside("--entyrpoint ''") {
     sh "cd ${makeDir} && make"
   }
 }
