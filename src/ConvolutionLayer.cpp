@@ -15,7 +15,7 @@ struct volume {
 def convolute(Mat img) {
   volume matDimensions = getDimensions(img);
   volume filterDimensions = setFilterDimensions(dimensions);
-  applFilters(img, filterdimensions);
+  applyFilters(img, filterdimensions);
 
 }
 
