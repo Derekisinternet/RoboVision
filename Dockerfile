@@ -5,7 +5,7 @@ FROM alpine
 MAINTAINER Derek 
 
 # install tools
-RUN apk add --update alpine-sdk cmake
+RUN apk add --update alpine-sdk cmake linux-headers
 
 # install opencv
 RUN git clone https://github.com/opencv/opencv.git; cd opencv && \
