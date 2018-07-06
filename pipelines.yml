@@ -16,7 +16,8 @@ pipelines:
       workflows: 
         branch: v0.5.0
         repo: 'https://github.com/concur/jenkins-workflows'
-        credentials: primary GitHub clone/checkout
+        credentials: 
+          description: primary GitHub clone/checkout
     tests:
       executable: app/build/roboVision
       positiveSet: hand
