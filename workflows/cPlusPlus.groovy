@@ -1,5 +1,7 @@
 import com.concur.*
 
+pipeline = new Commands()
+
 public cMake(Map yml, Map args) {
   String cMakeListsLocation = args?.cMakeLists    ?: yml?.tools?.cPlusPlus?.cMakeLists
   String cMakeBuildDir      = args?.cMakeBuildDir ?: yml?.tools?.cPlusPlus?.cMakeBuildDir ?: '..'
@@ -8,8 +10,10 @@ public cMake(Map yml, Map args) {
   assert cMakeBuildDir  : "Workfkows :: cPlusPlus :: cMake :: [cMakeDir] needs to be defined."
   assert container : "Workfkows :: cMake :: ccPlusPlusMake :: [container] needs to be defined."
   
+  String runString = "cd ${cMakeBuildDir} && cmake ${cMakeListsLocation}"
+  pipeline.debugPrint(runString)
   docker.image("$container").inside("--entrypoint ''") {
-    sh "cd ${cMakeBuildDir} && cmake ${cMakeListsLocation}"
+    sh runString
   }
 }
 
