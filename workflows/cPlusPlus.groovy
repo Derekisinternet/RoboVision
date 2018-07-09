@@ -3,8 +3,8 @@ import com.concur.*
 pipeline = new Commands()
 
 public cMake(Map yml, Map args) {
-  String cMakeListsLocation = args?.cMakeLists    ?: yml?.tools?.cPlusPlus?.cMakeLists
-  String cMakeBuildDir      = args?.cMakeBuildDir ?: yml?.tools?.cPlusPlus?.cMakeBuildDir ?: '..'
+  String cMakeListsLocation = args?.cMakeListsLocation  ?: '..'
+  String cMakeBuildDir      = args?.cMakeBuildDir ?: yml?.tools?.cPlusPlus?.cMakeBuildDir
   String container          = args?.container     ?: yml?.tools?.cPlusPlus?.container
 
   assert cMakeBuildDir  : "Workfkows :: cPlusPlus :: cMake :: [cMakeDir] needs to be defined."
