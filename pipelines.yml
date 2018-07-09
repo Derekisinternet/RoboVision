@@ -6,8 +6,8 @@ pipelines:
       patterns:
         master: master
         feature: .+
-    cMake:
-      container: robovision_test
+    cPlusPlus:
+      container: derekisinternet/opencv-test
     github:
       credentials:
         description: primary GitHub clone/checkout
@@ -25,11 +25,7 @@ pipelines:
   branches:
     feature:
       steps:
-        - docker:
-          - build:
-              dockerfile: Dockerfile
-              imageName: robovision_test
-        - cMake:
+        - cPlusPlus:
           - cMake:
               cMakeDir: app/build
               cMakeLists: CMakeLists.txt
@@ -40,6 +36,6 @@ pipelines:
 
     master:
       steps:
-        - cmake:
+        - cPlusPlus:
           - make:
               makeDir: 'app/build'
