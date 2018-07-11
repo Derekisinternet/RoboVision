@@ -14,7 +14,8 @@ public cMake(Map yml, Map args) {
   pipeline.debugPrint(runString)
 
   docker.image(container).inside("--entrypoint='' ") {
-    sh runString
+    // sh runString
+    sh "ls"
   }
 }
 
