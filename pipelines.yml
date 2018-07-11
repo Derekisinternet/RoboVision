@@ -28,8 +28,8 @@ pipelines:
         - cPlusPlus:
           - cMake:
               cMakeBuildDir: /app/build
-          - make:
-              makeDir: build
+          # - make:
+          #     makeDir: build
         - tests:
           - test:
 
