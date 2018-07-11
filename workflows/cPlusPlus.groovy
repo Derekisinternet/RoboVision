@@ -13,7 +13,7 @@ public cMake(Map yml, Map args) {
   String runString = "cd ${cMakeBuildDir} && cmake ${cMakeListsLocation}"
   pipeline.debugPrint(runString)
 
-  docker.image(container).inside("-u 0:0 --entrypoint='' ") {
+  docker.image(container).inside("--entrypoint='' ") {
     sh runString
   }
 }
