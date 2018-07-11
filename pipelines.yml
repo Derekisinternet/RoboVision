@@ -27,7 +27,7 @@ pipelines:
       steps:
         - cPlusPlus:
           - cMake:
-              cMakeBuildDir: build
+              cMakeBuildDir: /app/build
           - make:
               makeDir: build
         - tests:
