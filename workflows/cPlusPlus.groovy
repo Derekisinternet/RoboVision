@@ -13,7 +13,7 @@ public cMake(Map yml, Map args) {
   String runString = "cd ${cMakeBuildDir} && cmake ${cMakeListsLocation}"
   pipeline.debugPrint(runString)
 
-  docker.image(container).inside("--entrypoint='' ") {
+  docker.image(container).inside("-u 0:0 --entrypoint=''") {
     // sh runString
     sh "ls"
   }
@@ -26,7 +26,7 @@ public make(Map yml, Map args) {
   assert makeDir   : "Workfkows :: cPlusPlus :: make :: [makeDir] needs to be defined."
   assert container : "Workfkows :: cPlusPlus :: make :: [container] needs to be defined."
 
-  docker.image("$container").inside("-u 0:0 --entrypoint=''") {
+  docker.image(container).inside("-u 0:0 --entrypoint=''") {
     sh "cd ${makeDir} && make"
   }
 }
