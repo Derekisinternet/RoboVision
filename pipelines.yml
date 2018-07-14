@@ -21,8 +21,9 @@ pipelines:
     tests:
       dockerImage: derekisinternet/opencv-test:0.2.0
       executable: roboVision
-      positiveSet: ${env.hand_set}
-      negativeSet: ${env.negative_hand_set}
+      imageSetDir: "${env.IMAGE_DIRECTORY}"
+      positiveSet: hands
+      negativeSet: negatives
   branches:
     feature:
       steps:

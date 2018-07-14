@@ -7,6 +7,7 @@ public test(Map yml, Map args) {
   String dockerImage = args?.dockerImage ?: yml.tools?.tests?.dockerImage
   String cMakeListsLocation = args?.cMakeListsLocation  ?: '..'
   String buildDir    = args?.buildDir ?: yml?.tools?.cPlusPlus?.buildDir
+  String imageSetDir = args?.imageSetDir ?: yml.tools?.tests?.imageSetDir
 
   assert exe : "workflows :: tests :: test :: [executable] required as a parameter"
   assert dockerImage : "workflows :: tests :: test :: [dockerImage] required as a parameter"
@@ -17,7 +18,7 @@ public test(Map yml, Map args) {
   String runString = "cd $buildDir"
   runstring += " && cmake $cMakeListsLocation"
   runstring += " && make ."
-  runString += " && ./$exe -t $positives -n $negatives"
+  runString += " && ./$exe -t $imageSetDir/$positives -n $imageSetDir/$negatives"
   docker.image(dockerImage).inside("-u 0:0 --entrypoint=''"){
     sh runString
   }
