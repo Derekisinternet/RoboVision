@@ -19,18 +19,13 @@ pipelines:
         credentials: 
           description: primary GitHub clone/checkout
     tests:
-      executable: app/build/roboVision
-      positiveSet: hand
-      negativeSet: negatives
       dockerImage: derekisinternet/opencv-test:0.2.0
+      executable: roboVision
+      positiveSet: ${env.hand_set}
+      negativeSet: ${env.negative_hand_set}
   branches:
     feature:
       steps:
-        - cPlusPlus:
-          - cMake:
-              cMakeBuildDir: /app/build
-          # - make:
-          #     makeDir: build
         - tests:
           - test:
 
