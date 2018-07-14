@@ -16,7 +16,7 @@ public test(Map yml, Map args) {
   String runString = "cd build"
   runString += " && cmake $cMakeListsLocation"
   runString += " && make ."
-  runString += " && ./$exe -t $imageSetDir/$positives -n $imageSetDir/$negatives"
+  runString += " && ./$exe -t $imageSetDir/$positiveSet -n $imageSetDir/$negativeSet"
   docker.image(dockerImage).inside("-u 0:0 --entrypoint=''"){
     sh runString
   }
