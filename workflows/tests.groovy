@@ -14,8 +14,8 @@ public test(Map yml, Map args) {
   assert negativeSet : "workflows :: tests :: test :: [negativeSet] required as a parameter"
 
   String runString = "cd build"
-  runstring += " && cmake $cMakeListsLocation"
-  runstring += " && make ."
+  runString += " && cmake $cMakeListsLocation"
+  runString += " && make ."
   runString += " && ./$exe -t $imageSetDir/$positives -n $imageSetDir/$negatives"
   docker.image(dockerImage).inside("-u 0:0 --entrypoint=''"){
     sh runString
