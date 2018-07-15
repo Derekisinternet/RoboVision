@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 # an automated way to make CMakeLists, because I'm lazy:
 
 if [ $# -eq 0 ]
