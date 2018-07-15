@@ -13,7 +13,7 @@ public test(Map yml, Map args) {
   assert positiveSet : "workflows :: tests :: test :: [positiveSet] required as a parameter"
   assert negativeSet : "workflows :: tests :: test :: [negativeSet] required as a parameter"
 
-  String runString = "cd build"
+  String runString = "mkdir build && cd build"
   runString += " && echo 'about to run cmake'"
   runString += " && cmake $cMakeListsLocation"
   runString += " && echo 'about to run make'"
