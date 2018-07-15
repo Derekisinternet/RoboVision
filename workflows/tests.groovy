@@ -18,7 +18,7 @@ public test(Map yml, Map args) {
   runString += " && cmake $cMakeListsLocation"
   runString += " && echo 'about to run make'"
   runString += " && make ."
-  runString += " && echo 'about to train a model"
+  runString += " && echo 'about to train a model'"
   runString += " && ./$exe -t $imageSetDir/$positiveSet -n $imageSetDir/$negativeSet"
   docker.image(dockerImage).inside("-u 0:0 --entrypoint=''"){
     sh runString
