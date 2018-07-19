@@ -7,7 +7,7 @@ pipelines:
         master: master
         feature: .+
     cPlusPlus:
-      dockerImage: derekisinternet/opencv-test:0.2.0
+      dockerImage: derekisinternet/opencv-test:0.3.0
     github:
       credentials:
         description: primary GitHub clone/checkout

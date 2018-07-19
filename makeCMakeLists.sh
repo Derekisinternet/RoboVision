@@ -1,5 +1,5 @@
 #!/bin/sh
-# an automated way to make CMakeLists, because I'm lazy:
+# an automated way to make CMakeLists for testing, because I'm lazy:
 PROJECT="roboVision"       
 FILE=CMakeLists.txt
 if [ -e $FILE ]
@@ -7,7 +7,7 @@ if [ -e $FILE ]
         rm $FILE
 fi
 # Assumes the build location is set in an environment variable.
-OPENCV_LOCATION="$OPENCV_LOCATION"
+OPENCV_LOCATION="/app/opencv"
 if [ $PROJECT == roboVision ]
     then
         printf 'file (GLOB SOURCES\n    src/*.cpp\n)\n' >> $FILE
