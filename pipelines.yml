@@ -19,7 +19,7 @@ pipelines:
         credentials: 
           description: primary GitHub clone/checkout
     tests:
-      dockerImage: derekisinternet/opencv-test:0.2.0
+      dockerImage: derekisinternet/opencv-test:0.3.0
       executable: roboVision
       imageSetDir: "${env.IMAGE_DIRECTORY}"
       positiveSet: hands
