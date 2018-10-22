@@ -11,6 +11,6 @@ vector<cv::Rectangle> ObjectDetector::scan(Mat image){
   //Load classifier
   //TODO: get rid of hard-coded file reference
   Classifier classy = Classifier(HOGDescriptor_Saved);
-
   
+
 }

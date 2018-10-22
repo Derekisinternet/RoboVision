@@ -93,16 +93,10 @@ void debugLoop() {
         exit (EXIT_FAILURE);
     }
     printf("Camera operational\n");
-    // handFeatExt = HandFeatureExtractor();
     Classifier classy = Classifier("HOGDescriptor_Saved");
     
     for (;;) {    
         cap >> rawImage;
-        // if (handFeatExt.detect(rawImage)) {
-        //     // TODO: something useful?
-        //     printf("Found a hand!\n");
-        //     handFeatExt.dump(rawImage);
-        // }
         vector< Rect > detections;
         vector< double > foundWeights;
         classy.detectMultiScale(rawImage, detections, foundWeights);

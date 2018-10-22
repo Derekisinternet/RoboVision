@@ -187,7 +187,7 @@ void Classifier::detectMultiScale(
     vector<double> foundWeights
     ) 
     {
-      _hog.detectMultiScale(rawImage, detections, foundWeights);  
+      _hog.detectMultiScale(rawImage, detections, foundWeights, 0.5, _hog.blockStride, Size(0,0), 1.2, false);  
 
 }
 
