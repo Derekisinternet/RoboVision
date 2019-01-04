@@ -5,7 +5,8 @@
 
 class ObjectDetector {
   public:
-    vector<cv::Rectangle>scan(cv::Mat image);
+    ObjectDetector();
+    std::vector<cv::Rect>scan(cv::Mat image);
 
   private:
 };

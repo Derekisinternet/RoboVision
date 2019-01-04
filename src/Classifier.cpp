@@ -8,7 +8,7 @@ using namespace std;
 
 Classifier::Classifier() {
     _hogTrained = false;
-	Util::debugPrint("classifier", "initializing CLassifier object");
+	Util::debugPrint("classifier", "initializing Classifier object");
 	_svm = ml::SVM::create();
 	
     // TODO: figure out what all this means.
@@ -46,7 +46,7 @@ void Classifier::train(Mat data, vector<int> labels) {
         printf("    Number of labels: %zd\n", labels.size());
         return;
 	}
-    // if this works, mayberefactor the method to accept a mat  insted of vector:
+    // if this works, maybe refactor the method to accept a mat  insted of vector:
     Mat labelMat = Mat(labels, true);
 	bool success = _svm->train(data, cv::ml::ROW_SAMPLE, labelMat);
 	if (success) {
@@ -180,7 +180,7 @@ vector<cv::Point> Classifier::detect(Mat mat) {
     _hog.detect(mat, foundPoints);
     return foundPoints;
 }
-
+ 
 void Classifier::detectMultiScale(
     cv::Mat rawImage, 
     vector< cv::Rect > detections, 
