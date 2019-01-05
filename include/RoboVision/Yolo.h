@@ -5,10 +5,26 @@
 
 class Yolo {
   public:
-    static st::vector<cv::Rect> yolo(cv::Mat input);
+    Yolo();
+    std::vector<cv::Rect> yolo(cv::Mat input);
 
   private:
-    static std::vector<cv::Rect> makeGrid(cv::Mat input, std::vector<cv::Rect> output);
+    int subSections;
+    int boundingBoxes;
+    struct boundingBox {
+      cv::Point center;
+      int width;
+      int height;
+      double confidence;
+    };
+    struct gridCell {
+      cv::Rect location;
+      std::vector<struct boundingBox> boundingBoxes;
+      std::vector<double> conditionalClassProbs;
+    };
+
+    std::vector<cv::Rect> makeBoundingBoxes(cv::Rect input, std::vector<cv::Rect> output);
+    std::vector<gridCell> makeGrid(cv::Mat input, int gridSize);
 };
 
 #endif
