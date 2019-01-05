@@ -1,9 +1,9 @@
 #include <opencv2/opencv.hpp>
 
-#ifndef SEGMENTER_h
-#define SEGMENTER_h
+#ifndef YOLO_h
+#define YOLO_h
 
-class Segmenter {
+class Yolo {
   public:
     static st::vector<cv::Rect> yolo(cv::Mat input);
 

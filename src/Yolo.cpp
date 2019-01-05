@@ -1,18 +1,19 @@
 #include <opencv2/opencv.hpp>
-#include "RoboVision/Segmenter.h"
+#include "RoboVision/Yolo.h"
 
 using namespace std;
 using namespace cv;
 
-Segmenter::Segmenter(){}
+Yolo::Yolo(){}
 
 // implements the YOLO algorithm, outputs a vector of bounding boxes.
-vector<Rect> Segmenter::yolo(Mat input); {
+vector<Rect> Yolo::yolo(Mat input); {
   vector<Rect> grid = makeGrid(input);
+  for (vector::iterator it = grid.begin)
 }
 
 // divides a mat into a grid
-vector<Rect> Segmenter::makeGrid(Mat input) {
+vector<Rect> Yolo::makeGrid(Mat input) {
   int gridSize = 13;
   vector<Rect> output;
   int rowStep = (input.rows / gridSize);
