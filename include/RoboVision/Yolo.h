@@ -4,13 +4,12 @@
 #define YOLO_h
 
 class Yolo {
-  public:
-    Yolo();
-    std::vector<cv::Rect> yolo(cv::Mat input);
-
   private:
     int subSections;
     int boundingBoxes;
+    float minConfidence;
+    float nonMaxSuppression;
+    std::vector<std::string> classNames;
     struct boundingBox {
       cv::Point center;
       int width;
@@ -22,9 +21,18 @@ class Yolo {
       std::vector<struct boundingBox> boundingBoxes;
       std::vector<double> conditionalClassProbs;
     };
-
-    std::vector<cv::Rect> makeBoundingBoxes(cv::Rect input, std::vector<cv::Rect> output);
+    struct object {
+      cv::Rect location;
+      char classLabel;
+    };
+    // divides the input image into a grid of (gridSize x gridSize) cells
     std::vector<gridCell> makeGrid(cv::Mat input, int gridSize);
+    // makes bounding boxes, tf.
+    std::vector<cv::Rect> makeBoundingBoxes(cv::Rect input, std::vector<cv::Rect> output);
+
+  public:
+    Yolo(std::vector<std::string> classList);
+    std::vector<object> yolo(cv::Mat input);
 };
 
 #endif

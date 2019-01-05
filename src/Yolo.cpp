@@ -4,18 +4,20 @@
 using namespace std;
 using namespace cv;
 
-Yolo::Yolo(){
+Yolo::Yolo(vector<string> classList){
+  classNames = classList;
   subSections = 13;
-  boundingBoxes = 2;
+  boundingBoxes = 5;
+  minConfidence = 0.5; // minimum confidence threshold filter's out weak guesses
+  nonMaxSuppression = 0.3; //non-maxima suppression threshold
 }
 
 // implements the YOLO algorithm, outputs a vector of bounding boxes.
-vector<Rect> Yolo::yolo(Mat input) {
+vector<Yolo::object> Yolo::yolo(Mat input) {
+  vector<Yolo::object> output;
   vector<gridCell> grid = makeGrid(input, subSections);
-  vector<Rect> gridBoundingBoxes;
-  // makeBoundingBoxes()
-  // TODO: lolwut
-  return gridBoundingBoxes;
+  // TODO: ????
+  return output;
 }
 
 // divides a mat into a grid
