@@ -141,7 +141,7 @@ void ImageCollector::setBoxDimensions(string dirName) {
         //append file name to folder to give us a filepath:
         dirName.insert(dirName.end(), '/');
         dirName.append(name);
-        Mat sample = imread(dirName, CV_LOAD_IMAGE_COLOR);
+        Mat sample = imread(dirName, IMREAD_COLOR);
         int width = sample.cols;
         int height = (sample.rows + 1); // account for how crop() works. Look it up.
         printf("sample image dimensions: %d x %d\n", width, height);

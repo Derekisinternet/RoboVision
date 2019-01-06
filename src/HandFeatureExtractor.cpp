@@ -62,7 +62,7 @@ Mat HandFeatureExtractor::preProcess(Mat mat) {
     Mat yccImage;
     
     // convert raw RGB image to YCrCb and apply thresholds:
-    cvtColor(mat, yccImage, CV_BGR2YCrCb);
+    cvtColor(mat, yccImage, COLOR_BGR2YCrCb);
     inRange(yccImage, Scalar(_minY, _minCr, _minCb), 
             Scalar(_maxY, _maxCr, _maxCb), yccImage);
     
@@ -80,8 +80,8 @@ Mat HandFeatureExtractor::preProcess(Mat mat) {
 vector<Point> HandFeatureExtractor::getLargestContour(Mat mat) {
     vector< vector<Point> > contours;
     vector<Vec4i> hierarchy;
-    findContours(mat, contours, hierarchy, CV_RETR_EXTERNAL,
-                    CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+    findContours(mat, contours, hierarchy, RETR_EXTERNAL,
+                    CHAIN_APPROX_SIMPLE, Point(0, 0));
         
     size_t largestContour = getLargestContourIndex(contours);       
     if (!contours.empty()) { 
