@@ -27,8 +27,8 @@ class Yolo {
     };
     // divides the input image into a grid of (gridSize x gridSize) cells
     std::vector<gridCell> makeGrid(cv::Mat input, int gridSize);
-    // makes bounding boxes, tf.
-    std::vector<cv::Rect> makeBoundingBoxes(cv::Rect input, std::vector<cv::Rect> output);
+    // predicts bounding boxes
+    std::vector<cv::Rect> predictBoundingBoxes(cv::Rect input, std::vector<cv::Rect> output);
 
   public:
     Yolo(std::vector<std::string> classList);

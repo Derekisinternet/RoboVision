@@ -161,7 +161,7 @@ void CategoryTester::populateVectors(char* folderPath,
     printf("%d\n", size);
 
     for (size_t i = 0; i < size; i++) {
-        Mat mat = imread(fileList[i], CV_LOAD_IMAGE_COLOR);
+        Mat mat = imread(fileList[i], IMREAD_COLOR);
         if (i % 3 == 0) {
             testOutput.push_back(mat);
         } else {
@@ -250,7 +250,7 @@ void CategoryTester::testPath(char* path, bool match) {
 
 // NOTE: uses HandFeatureExtractor instead of HOG and SVM
 bool CategoryTester::testImageFile(string file) {
-	Mat image = imread(file, CV_LOAD_IMAGE_COLOR);
+	Mat image = imread(file, IMREAD_COLOR);
     HandFeatureExtractor handFeatExt = HandFeatureExtractor();
     bool matched = false;
     printf("Testing file: %s\n", file.c_str());
