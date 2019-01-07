@@ -13,8 +13,8 @@ Yolo::Yolo(vector<string> classList){
 }
 
 // implements the YOLO algorithm, outputs a vector of bounding boxes.
-vector<Yolo::object> Yolo::yolo(Mat input) {
-  vector<Yolo::object> output;
+vector<DetectedObject> Yolo::yolo(Mat input) {
+  vector<DetectedObject> output;
   vector<gridCell> grid = makeGrid(input, subSections);
   // TODO: ????
   return output;

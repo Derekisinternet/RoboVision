@@ -7,10 +7,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include "RoboVision/CategoryTester.h"
+#include "RoboVision/DetectedObject.h"
 #include "RoboVision/Hand.h"
 #include "RoboVision/HandFeatureExtractor.h"
 #include "RoboVision/ImageCollector.h"
+#include "RoboVision/ObjectDetector.h"
 
 using namespace std;
 using namespace cv;
@@ -30,6 +31,7 @@ void debugLoop();
 void testLoop(char* filePath1, char* filePath2);
 vector<string> getFileNames(char* path);
 void printHelp();
+int confidenceColor(float confidence);
 
 // MAIN LOOP
 int main(int argc, char** argv) {
@@ -87,21 +89,28 @@ void parseFlags(int argc, char** argv) {
 
 void debugLoop() {
     VideoCapture cap(0);
-
     if (!cap.isOpened()) {
         printf("Camera not operational\n");
         exit (EXIT_FAILURE);
     }
     printf("Camera operational\n");
-    Classifier classy = Classifier("HOGDescriptor_Saved");
-    
+
+    //initialize detector
+    ObjectDetector detector = ObjectDetector();
     for (;;) {    
         cap >> rawImage;
         vector< Rect > detections;
         vector< double > foundWeights;
-        classy.detectMultiScale(rawImage, detections, foundWeights);
-        for ( size_t j = 0; j < detections.size(); j++ ) {
-            Scalar color = Scalar( 0, foundWeights[j] * foundWeights[j] * 200, 0 );
+
+        // detect objects
+        vector<DetectedObject> objects = detector.scan(rawImage);
+
+        // iterate over detected objects
+        for ( size_t j = 0; j < objects.size(); j++ ) {
+            float confidence = objects[j].confidence;
+            // Color according to confidence
+            int confColor = confidenceColor(confidence);
+            Scalar color = Scalar( 0, confColor, 0 );
             rectangle( rawImage, detections[j], color, rawImage.cols / 400 + 1 );
         }
 
@@ -112,16 +121,15 @@ void debugLoop() {
     }
 }
 
+// determines saturation color based on confidence score. Bolder for higher, lighter for lower.
+int confidenceColor(float confidence) {
+    int mapped = (int)(confidence * 255);
+    return mapped;
+}
+
 void testLoop(char* filePath1, char* filePath2) {
-    printf("RoboVision initialized in test mode with positive sample path: %s\n", filePath1);
-    CategoryTester tester = CategoryTester();
-    if ((filePath1 != NULL) & (filePath2 != NULL)) {
-        printf("Negative sample path: %s\n", filePath2);
-        tester.test(filePath1, filePath2);
-    }
-    else if (filePath1 != NULL) {
-        tester.test(filePath1);
-    } 
+    printf("This method is currently useless :(\n");
+     
 }
 
 void printHelp() {
