@@ -36,11 +36,6 @@ ImageCollector::ImageCollector() {
     _WINDOW_NAME = "RoboVision Image Collector";
 }
 
-ImageCollector::ImageCollector(string className) {
-    ImageCollector();
-    this->_className = className;
-}
-
 void ImageCollector::drawCenteredBox(int width, int height) {
     printf("Frame dimensions: %d x %d\n", _currentFrame.cols, _currentFrame.rows);
     if (width < _currentFrame.cols && height < _currentFrame.rows) {
@@ -53,7 +48,8 @@ void ImageCollector::drawCenteredBox(int width, int height) {
 }
 
 int ImageCollector::collectorLoop(string folderName){
-    
+    // TODO: get rid of setting global var like this. It's because of the mouseCallback.
+    _className = folderName;
     getReady(folderName);
 
     //open webcam

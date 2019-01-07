@@ -6,7 +6,6 @@
 class ImageCollector {
 public:
 	ImageCollector();
-	ImageCollector(std::string className);
 	int collectorLoop(std::string folderName);
 	int videoCollectorLoop(std::string folderName);
 	void mouseCallback(int event, int x, int y, int flags);
