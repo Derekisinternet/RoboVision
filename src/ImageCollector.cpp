@@ -13,6 +13,7 @@
 #include <regex>
 #include "RoboVision/ImageCollector.h"
 #include "RoboVision/Util.h"
+#include "RoboVision/DetectedObject.h"
 
 using namespace cv;
 using namespace std;
@@ -35,6 +36,11 @@ ImageCollector::ImageCollector() {
     _WINDOW_NAME = "RoboVision Image Collector";
 }
 
+ImageCollector::ImageCollector(string className) {
+    ImageCollector();
+    this->_className = className;
+}
+
 void ImageCollector::drawCenteredBox(int width, int height) {
     printf("Frame dimensions: %d x %d\n", _currentFrame.cols, _currentFrame.rows);
     if (width < _currentFrame.cols && height < _currentFrame.rows) {
@@ -44,7 +50,6 @@ void ImageCollector::drawCenteredBox(int width, int height) {
         _pt2.y = _pt1.y + height;
         _subFrameBox = true;
     }
-    
 }
 
 int ImageCollector::collectorLoop(string folderName){
@@ -79,7 +84,8 @@ int ImageCollector::collectorLoop(string folderName){
         // imshow("RoboVision Image Collector", _currentFrame);
         redraw();
 
-        switch(waitKey(30)) {
+        // don't iterate until keypress
+        switch(waitKey(0)) {
             // save image by pressing spacebar
             case 32: {
                 // if a box was drawn
@@ -96,6 +102,72 @@ int ImageCollector::collectorLoop(string folderName){
                 break;
         }   
     }
+    return 0;
+}
+
+int ImageCollector::videoCollectorLoop(string folderName){
+    getReady(folderName);
+
+    //open webcam
+    VideoCapture cap(0);
+    if (!cap.isOpened()) {
+        cout << "camera not operational" << endl;
+        return -1;
+    } else {
+        printf("Camera operational\n");
+        // populate _currentFrame so that we can use its dimensions later
+        cap >> _currentFrame;
+    }
+    //create window
+    namedWindow(_WINDOW_NAME, 1);
+    //set up mouse stuff
+    cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,
+                         (void *) this);
+    const Scalar GREEN = Scalar(0,255,0);
+
+    VideoWriter video("output.avi", VideoWriter::fourcc('M','J','P','G'),10, Size(_currentFrame.cols,_currentFrame.rows),true);
+    for (;;) {
+        bool recording;
+        cap >> _currentFrame;
+        if (recording) {
+            video.write(_currentFrame);
+        }
+        imshow(_WINDOW_NAME, _currentFrame);
+
+        switch(waitKey(30)) {
+            //press spacebar to stop recording
+            case 32: {
+                if (recording) { 
+                    recording = false; 
+                } else {
+                    recording = true;
+                }
+            }
+            // press Esc to move to next step
+            case 27:  
+                break; 
+        }
+    }
+    // Load the video you just recorded and classify objects frame by frame
+    VideoCapture vid("output.avi");
+    if (!vid.isOpened()) {
+        cout << "unable to load saved output file.\n";
+        return -1;
+    }
+    // get the framerate of the vidya
+    double fps = vid.get(CAP_PROP_FPS);
+
+    for(;;) {
+        Mat frame;
+        // ::read(Mat) returns bool of operation success
+        if (!vid.read(frame)){
+            break;
+        }
+        imshow(_WINDOW_NAME, frame);
+
+    }
+
+    //TODO: Delete output.avi before exiting
     return 0;
 }
 
@@ -184,6 +256,9 @@ void ImageCollector::saveImage(string dir, Mat image) {
     _fileIndex +=1;
 }
 
+// controlls mouse actions:
+// Left Button: First click starts a bounding box, second click completes it
+// Right Button: If clicked inside a bounding box, that bounding box is dismissed.
 void ImageCollector::mouseCallback(int event, int x, int y, 
                    int flags) {
     if (event == EVENT_LBUTTONDOWN) {
@@ -206,6 +281,12 @@ void ImageCollector::mouseCallback(int event, int x, int y,
             printf("   y = %d\n", _pt2.y);
             _drawBound = false;
             _subFrameBox = true;
+
+            DetectedObject object;
+            object.location = Rect(_pt1, _pt2);
+            object.classLabel = _className;
+
+            _boxes.push_back(object);
         }
 
     } else if (event == EVENT_RBUTTONDOWN) {
