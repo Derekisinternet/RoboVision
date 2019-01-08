@@ -55,7 +55,7 @@ void parseFlags(int argc, char** argv) {
                 string arg = string(optarg);
                 if (arg.size() > 0) {
                     ImageCollector collector = ImageCollector();
-                    collector.collectorLoop(string(optarg));
+                    collector.videoCollectorLoop(string(optarg));
                 } else {
                     fprintf(stderr, "ERROR: '%s' is not a valid file path\n", optarg);
                 }

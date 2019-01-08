@@ -81,14 +81,10 @@ int ImageCollector::collectorLoop(string folderName){
         redraw();
 
         // don't iterate until keypress
-        switch(waitKey(0)) {
+        switch(waitKey(30)) {
             // save image by pressing spacebar
             case 32: {
-                // if a box was drawn
-                if ((_subFrameBox) ) {
-                    Mat subFrame = crop();
-                    saveImage(folderName, subFrame);
-                } else {
+                if (_boxes.size() > 0) {
                     saveImage(folderName, _currentFrame);
                 }
                 break;
@@ -103,6 +99,7 @@ int ImageCollector::collectorLoop(string folderName){
 
 int ImageCollector::videoCollectorLoop(string folderName){
     getReady(folderName);
+    _WINDOW_NAME = "RoboVision Video collector";
 
     //open webcam
     VideoCapture cap(0);
@@ -116,10 +113,6 @@ int ImageCollector::videoCollectorLoop(string folderName){
     }
     //create window
     namedWindow(_WINDOW_NAME, 1);
-    //set up mouse stuff
-    cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,
-                         (void *) this);
-    const Scalar GREEN = Scalar(0,255,0);
 
     VideoWriter video("output.avi", VideoWriter::fourcc('M','J','P','G'),10, Size(_currentFrame.cols,_currentFrame.rows),true);
     for (;;) {
@@ -133,6 +126,7 @@ int ImageCollector::videoCollectorLoop(string folderName){
         switch(waitKey(30)) {
             //press spacebar to stop recording
             case 32: {
+                Util::debugPrint("videoCollector", "spacebar event");
                 if (recording) { 
                     recording = false; 
                 } else {
@@ -140,7 +134,8 @@ int ImageCollector::videoCollectorLoop(string folderName){
                 }
             }
             // press Esc to move to next step
-            case 27:  
+            case 27:
+                Util::debugPrint("videoCollector", "Escape button event");
                 break; 
         }
     }
@@ -159,8 +154,25 @@ int ImageCollector::videoCollectorLoop(string folderName){
         if (!vid.read(frame)){
             break;
         }
+        // rebuild window
+        destroyWindow(_WINDOW_NAME);
+        _WINDOW_NAME = "Training Data Labelling Stage";
+        namedWindow(_WINDOW_NAME);
         imshow(_WINDOW_NAME, frame);
 
+        //set up mouse stuff
+        cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
+        const Scalar GREEN = Scalar(0,255,0);
+
+        switch (waitKey(0)) {
+            case 32: {
+                Util::debugPrint("videoCollector", "spacebar event");
+                break;
+            }
+            case 27:
+                Util::debugPrint("videoCollector", "Escape Button");
+                break;
+        }
     }
 
     //TODO: Delete output.avi before exiting
@@ -255,8 +267,7 @@ void ImageCollector::saveImage(string dir, Mat image) {
 // controlls mouse actions:
 // Left Button: First click starts a bounding box, second click completes it
 // Right Button: If clicked inside a bounding box, that bounding box is dismissed.
-void ImageCollector::mouseCallback(int event, int x, int y, 
-                   int flags) {
+void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
     if (event == EVENT_LBUTTONDOWN) {
         // first click starts a bounding box, resets one if exists
         if (!_drawBound) {
@@ -281,8 +292,8 @@ void ImageCollector::mouseCallback(int event, int x, int y,
             DetectedObject object;
             object.location = Rect(_pt1, _pt2);
             object.classLabel = _className;
-
             _boxes.push_back(object);
+            redraw();
         }
 
     } else if (event == EVENT_RBUTTONDOWN) {
@@ -308,8 +319,10 @@ void ImageCollector::mouseCallback(int event, int x, int y,
 void ImageCollector::redraw() {
     if (_subFrameBox) {
         const Scalar GREEN = Scalar(0,255,0);
-        // draw the rectangle
-        rectangle(_currentFrame, _pt1, _pt2, GREEN);
+        // draw the rectangles
+        for( DetectedObject box : _boxes) {
+            rectangle(_currentFrame, box.location, GREEN);
+        }
     }
     imshow(_WINDOW_NAME, _currentFrame);
 }
