@@ -31,9 +31,9 @@ ImageCollector::ImageCollector() {
     _pt2.y = 0;
     _established = false;
     _drawBound = false;
-    _subFrameBox = false;
     _currentFrame = Mat();
     _WINDOW_NAME = "RoboVision Image Collector";
+    _boxes = vector<DetectedObject>();
 }
 
 void ImageCollector::drawCenteredBox(int width, int height) {
@@ -43,59 +43,58 @@ void ImageCollector::drawCenteredBox(int width, int height) {
         _pt1.y = ((_currentFrame.rows - height)/2);
         _pt2.x = _pt1.x + width;
         _pt2.y = _pt1.y + height;
-        _subFrameBox = true;
     }
 }
 
-int ImageCollector::collectorLoop(string folderName){
-    // TODO: get rid of setting global var like this. It's because of the mouseCallback.
-    _className = folderName;
-    getReady(folderName);
+// int ImageCollector::collectorLoop(string folderName){
+//     // TODO: get rid of setting global var like this. It's because of the mouseCallback.
+//     _className = folderName;
+//     getReady(folderName);
 
-    //open webcam
-    VideoCapture cap(0);
-    if (!cap.isOpened()) {
-        cout << "camera not operational" << endl;
-        return -1;
-    } else {
-        printf("Camera operational\n");
-    }
+//     //open webcam
+//     VideoCapture cap(0);
+//     if (!cap.isOpened()) {
+//         cout << "camera not operational" << endl;
+//         return -1;
+//     } else {
+//         printf("Camera operational\n");
+//     }
 
-    //create window
-    namedWindow(_WINDOW_NAME, 1);
+//     //create window
+//     namedWindow(_WINDOW_NAME, 1);
 
-    //set callback
-    cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,
-                         (void *) this);
+//     //set callback
+//     cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,
+//                          (void *) this);
 
-    const Scalar GREEN = Scalar(0,255,0);
+//     const Scalar GREEN = Scalar(0,255,0);
 
-    if (_established) {
-        cap >> _currentFrame;
-        setBoxDimensions(folderName);
-    }
+//     if (_established) {
+//         cap >> _currentFrame;
+//         setBoxDimensions(folderName);
+//     }
 
-    for (;;) {
-        cap >> _currentFrame;
-        // imshow("RoboVision Image Collector", _currentFrame);
-        redraw();
+//     for (;;) {
+//         cap >> _currentFrame;
+//         // imshow("RoboVision Image Collector", _currentFrame);
+//         redraw();
 
-        // don't iterate until keypress
-        switch(waitKey(30)) {
-            // save image by pressing spacebar
-            case 32: {
-                if (_boxes.size() > 0) {
-                    saveImage(folderName, _currentFrame);
-                }
-                break;
-            }
-            // break the loop by pressing 'Esc'
-            case 27:
-                break;
-        }   
-    }
-    return 0;
-}
+//         // don't iterate until keypress
+//         switch(waitKey(30)) {
+//             // save image by pressing spacebar
+//             case 32: {
+//                 if (_boxes.size() > 0) {
+//                     saveImage(folderName, _currentFrame);
+//                 }
+//                 break;
+//             }
+//             // break the loop by pressing 'Esc'
+//             case 27:
+//                 break;
+//         }   
+//     }
+//     return 0;
+// }
 
 int ImageCollector::videoCollectorLoop(string folderName){
     getReady(folderName);
@@ -104,17 +103,22 @@ int ImageCollector::videoCollectorLoop(string folderName){
     //open webcam
     VideoCapture cap(0);
     if (!cap.isOpened()) {
-        cout << "camera not operational" << endl;
+        cout << "Camera not operational" << endl;
         return -1;
     } else {
         printf("Camera operational\n");
-        // populate _currentFrame so that we can use its dimensions later
-        cap >> _currentFrame;
     }
-    //create window
+    // create window
     namedWindow(_WINDOW_NAME, 1);
+    // set callback
+    cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
+    // create a VideoWriter object.
+    double fps = cap.get(CAP_PROP_FPS);
+    int frame_width = cap.get(CV_CAP_PROP_FRAME_WIDTH); 
+    int frame_height = cap.get(CV_CAP_PROP_FRAME_HEIGHT); 
+    VideoWriter video("output.avi", VideoWriter::fourcc('M','J','P','G'),fps, 
+        Size(frame_width, frame_height),true);
 
-    VideoWriter video("output.avi", VideoWriter::fourcc('M','J','P','G'),10, Size(_currentFrame.cols,_currentFrame.rows),true);
     for (;;) {
         bool recording;
         cap >> _currentFrame;
@@ -122,6 +126,7 @@ int ImageCollector::videoCollectorLoop(string folderName){
             video.write(_currentFrame);
         }
         imshow(_WINDOW_NAME, _currentFrame);
+        redraw();
 
         switch(waitKey(30)) {
             //press spacebar to stop recording
@@ -145,8 +150,6 @@ int ImageCollector::videoCollectorLoop(string folderName){
         cout << "unable to load saved output file.\n";
         return -1;
     }
-    // get the framerate of the vidya
-    double fps = vid.get(CAP_PROP_FPS);
 
     for(;;) {
         Mat frame;
@@ -229,6 +232,7 @@ void ImageCollector::setBoxDimensions(string dirName) {
     }
 }
 
+// get the name of the last file in a directory
 int ImageCollector::getLastImageIndex(string directory) {
     DIR *dir ;
     struct dirent *entry;
@@ -264,7 +268,7 @@ void ImageCollector::saveImage(string dir, Mat image) {
     _fileIndex +=1;
 }
 
-// controlls mouse actions:
+// controls mouse actions:
 // Left Button: First click starts a bounding box, second click completes it
 // Right Button: If clicked inside a bounding box, that bounding box is dismissed.
 void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
@@ -287,24 +291,23 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
             printf("   x = %d\n", _pt2.x);
             printf("   y = %d\n", _pt2.y);
             _drawBound = false;
-            _subFrameBox = true;
 
             DetectedObject object;
             object.location = Rect(_pt1, _pt2);
             object.classLabel = _className;
             _boxes.push_back(object);
-            redraw();
         }
 
     } else if (event == EVENT_RBUTTONDOWN) {
         printf("rightbutton click\n");
-        // clears bounding box if one exists
-        _pt1.x = 0;
-        _pt1.y = 0;
-        _pt2.x = 1;
-        _pt2.y = 1;
-        _drawBound = false;
-        _subFrameBox = false;
+        // remove box if button click was inside it
+        for ( int i = 0; i < _boxes.size(); i++) {
+            if (_boxes[i].location.contains(Point(x,y)) ) {
+                vector<DetectedObject>::iterator iter(_boxes.begin() + i);
+                _boxes.erase(iter);
+            }
+        }
+        redraw();
     } else if (event == EVENT_MOUSEMOVE) {
         // if boundingbox in progress
         // redraw box with new posish
@@ -317,12 +320,14 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
 }
 
 void ImageCollector::redraw() {
-    if (_subFrameBox) {
-        const Scalar GREEN = Scalar(0,255,0);
-        // draw the rectangles
-        for( DetectedObject box : _boxes) {
-            rectangle(_currentFrame, box.location, GREEN);
-        }
+    const Scalar GREEN = Scalar(0,255,0);
+    // draw the rectangles
+    for( DetectedObject box : _boxes) {
+        rectangle(_currentFrame, box.location, GREEN);
+    }
+    // draw the in-progress bounding box
+    if (_drawBound) {
+        rectangle(_currentFrame, Rect(_pt1, _pt2), GREEN);
     }
     imshow(_WINDOW_NAME, _currentFrame);
 }

@@ -26,7 +26,6 @@ private:
 	cv::Point _pt2;
 	bool _established;
 	bool _drawBound;
-	bool _subFrameBox;
 	const char* _WINDOW_NAME;
 	std::string _className;
 	std::vector<struct DetectedObject> _boxes;
