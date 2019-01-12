@@ -114,13 +114,26 @@ int ImageCollector::videoCollectorLoop(string folderName){
     cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
     // create a VideoWriter object.
     double fps = cap.get(CAP_PROP_FPS);
-    int frame_width = cap.get(CV_CAP_PROP_FRAME_WIDTH); 
-    int frame_height = cap.get(CV_CAP_PROP_FRAME_HEIGHT); 
-    VideoWriter video("output.avi", VideoWriter::fourcc('M','J','P','G'),fps, 
-        Size(frame_width, frame_height),true);
+    int frame_width = cap.get(CAP_PROP_FRAME_WIDTH); 
+    int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT); 
+    VideoWriter video;
+    
+    if ( video.open("output.avi", VideoWriter::fourcc('M','J','P','G'),fps, 
+        Size(frame_width, frame_height),true) ) {
+        Util::debugPrint("ImageCollector::videoLoop", "videoWriter initialized");
+    } else {
+        Util::errorPrint("ImageCollector::videoCollectorLoop",
+                "Unable to open VideoWriter");
+            return -1;
+    }
 
+    bool breakLoop = false;
     for (;;) {
         bool recording;
+        if (breakLoop) {
+            break;
+        }
+
         cap >> _currentFrame;
         if (recording) {
             video.write(_currentFrame);
@@ -131,27 +144,35 @@ int ImageCollector::videoCollectorLoop(string folderName){
         switch(waitKey(30)) {
             //press spacebar to stop recording
             case 32: {
-                Util::debugPrint("videoCollector", "spacebar event");
                 if (recording) { 
-                    recording = false; 
+                    recording = false;
+                    Util::debugPrint("videoCollector", "Recording Stopped");
                 } else {
                     recording = true;
+                    Util::debugPrint("videoCollector", "Recording Started");
                 }
+                break;
             }
             // press Esc to move to next step
             case 27:
-                Util::debugPrint("videoCollector", "Escape button event");
+                Util::debugPrint("videoCollector", "Moving to Labelling stage");
+                breakLoop = true;
                 break; 
         }
     }
+    breakLoop = false; // re-use for the next loop
+
     // Load the video you just recorded and classify objects frame by frame
-    VideoCapture vid("output.avi");
+    char outFile[] = "output.avi";
+    VideoCapture vid(outFile, CAP_OPENCV_MJPEG);
     if (!vid.isOpened()) {
         cout << "unable to load saved output file.\n";
-        return -1;
+        breakLoop = true;
     }
 
     for(;;) {
+        if (breakLoop) { break; }
+
         Mat frame;
         // ::read(Mat) returns bool of operation success
         if (!vid.read(frame)){
@@ -173,12 +194,15 @@ int ImageCollector::videoCollectorLoop(string folderName){
                 break;
             }
             case 27:
-                Util::debugPrint("videoCollector", "Escape Button");
+                Util::debugPrint("videoCollector", "Exiting Image Collector");
+                breakLoop = true;
                 break;
         }
     }
 
-    //TODO: Delete output.avi before exiting
+    if (remove(outFile) !=0 ) {
+        Util::errorPrint("ImageCollector :: videoCollectorLoop", "unable to delete temporary output file");
+    }
     return 0;
 }
 
