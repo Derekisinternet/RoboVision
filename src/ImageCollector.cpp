@@ -114,16 +114,15 @@ int ImageCollector::videoCollectorLoop(string folderName){
     cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
     // create a VideoWriter object.
     double fps = cap.get(CAP_PROP_FPS);
+    int codec = VideoWriter::fourcc('M','J','P','G');
     int frame_width = cap.get(CAP_PROP_FRAME_WIDTH); 
     int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT); 
     VideoWriter video;
     
-    if ( video.open("output.avi", VideoWriter::fourcc('M','J','P','G'),fps, 
-        Size(frame_width, frame_height),true) ) {
+    if ( video.open("output.avi", codec,fps, Size(frame_width, frame_height),true) ) {
         Util::debugPrint("ImageCollector::videoLoop", "videoWriter initialized");
     } else {
-        Util::errorPrint("ImageCollector::videoCollectorLoop",
-                "Unable to open VideoWriter");
+        Util::errorPrint("ImageCollector::videoCollectorLoop", "Unable to open VideoWriter");
             return -1;
     }
 
@@ -157,6 +156,7 @@ int ImageCollector::videoCollectorLoop(string folderName){
             case 27:
                 Util::debugPrint("videoCollector", "Moving to Labelling stage");
                 breakLoop = true;
+                video.~VideoWriter();
                 break; 
         }
     }
@@ -164,25 +164,34 @@ int ImageCollector::videoCollectorLoop(string folderName){
 
     // Load the video you just recorded and classify objects frame by frame
     char outFile[] = "output.avi";
+    Util::debugPrint("ImageCollector::videoCollectorLoop", 
+        "loading saved output file");
+
     VideoCapture vid(outFile, CAP_OPENCV_MJPEG);
-    if (!vid.isOpened()) {
-        cout << "unable to load saved output file.\n";
+
+    if (vid.isOpened()) {
+        Util::debugPrint("ImageCollector::videoCollectorLoop", "Loaded stored video");
+    } else {
+        Util::errorPrint("ImageCollector::videoCollectorLoop", 
+            "unable to load saved output file.\n");
+
         breakLoop = true;
     }
 
     for(;;) {
         if (breakLoop) { break; }
 
-        Mat frame;
-        // ::read(Mat) returns bool of operation success
-        if (!vid.read(frame)){
+        // .read(Mat) returns bool of operation success
+        if (!vid.read(_currentFrame)){
+            Util::debugPrint("ImageCollector::videoCollectorLoop", 
+            "reached end of file.");
             break;
         }
         // rebuild window
         destroyWindow(_WINDOW_NAME);
         _WINDOW_NAME = "Training Data Labelling Stage";
         namedWindow(_WINDOW_NAME);
-        imshow(_WINDOW_NAME, frame);
+        imshow(_WINDOW_NAME, _currentFrame);
 
         //set up mouse stuff
         cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);

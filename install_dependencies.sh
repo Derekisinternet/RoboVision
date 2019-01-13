@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: make an install for OSX. Need brew -> ffmpeg 
+
 echo "Running apt update . . ."
 sudo apt update
 echo "Running apt uprade . . . "
