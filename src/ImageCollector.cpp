@@ -112,6 +112,30 @@ int ImageCollector::videoCollectorLoop(string folderName){
     namedWindow(_WINDOW_NAME, 1);
     // set callback
     cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
+
+    // record training footage
+    char outFile[] = "output.avi";
+    if (recordVideo(outFile, cap) != 0 ) {
+        return -1;
+    }
+
+    // go over each frame and draw bounding boxes
+    if (processFootage(outFile) != 0 ) {
+        return -1;
+    }
+
+    
+
+    if (remove(outFile) !=0 ) {
+        Util::errorPrint("ImageCollector :: videoCollectorLoop", "unable to delete temporary output file");
+    }
+    return 0;
+}
+
+int ImageCollector::recordVideo(char fileName[], VideoCapture cap) {
+    bool breakLoop;
+    bool recording;
+
     // create a VideoWriter object.
     double fps = cap.get(CAP_PROP_FPS);
     int codec = VideoWriter::fourcc('M','J','P','G');
@@ -119,16 +143,14 @@ int ImageCollector::videoCollectorLoop(string folderName){
     int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT); 
     VideoWriter video;
     
-    if ( video.open("output.avi", codec,fps, Size(frame_width, frame_height),true) ) {
+    if ( video.open(fileName, codec,fps, Size(frame_width, frame_height),true) ) {
         Util::debugPrint("ImageCollector::videoLoop", "videoWriter initialized");
     } else {
         Util::errorPrint("ImageCollector::videoCollectorLoop", "Unable to open VideoWriter");
             return -1;
     }
 
-    bool breakLoop = false;
     for (;;) {
-        bool recording;
         if (breakLoop) {
             break;
         }
@@ -138,7 +160,6 @@ int ImageCollector::videoCollectorLoop(string folderName){
             video.write(_currentFrame);
         }
         imshow(_WINDOW_NAME, _currentFrame);
-        redraw();
 
         switch(waitKey(30)) {
             //press spacebar to stop recording
@@ -160,57 +181,46 @@ int ImageCollector::videoCollectorLoop(string folderName){
                 break; 
         }
     }
-    breakLoop = false; // re-use for the next loop
+    return  0;
+}
 
+int ImageCollector::processFootage(char inFile[]) {
     // Load the video you just recorded and classify objects frame by frame
-    char outFile[] = "output.avi";
-    Util::debugPrint("ImageCollector::videoCollectorLoop", 
-        "loading saved output file");
-
-    VideoCapture vid(outFile, CAP_OPENCV_MJPEG);
-
+    VideoCapture vid(inFile, CAP_OPENCV_MJPEG);
     if (vid.isOpened()) {
         Util::debugPrint("ImageCollector::videoCollectorLoop", "Loaded stored video");
     } else {
         Util::errorPrint("ImageCollector::videoCollectorLoop", 
             "unable to load saved output file.\n");
-
-        breakLoop = true;
+        return -1;
     }
 
+    // rebuild window
+    destroyWindow(_WINDOW_NAME);
+    _WINDOW_NAME = "Training Data Labelling Stage";
+    namedWindow(_WINDOW_NAME);
+    imshow(_WINDOW_NAME, _currentFrame);
+    //set up mouse stuff
+    cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
+
+    bool breakLoop;
     for(;;) {
         if (breakLoop) { break; }
-
-        // .read(Mat) returns bool of operation success
-        if (!vid.read(_currentFrame)){
-            Util::debugPrint("ImageCollector::videoCollectorLoop", 
-            "reached end of file.");
-            break;
-        }
-        // rebuild window
-        destroyWindow(_WINDOW_NAME);
-        _WINDOW_NAME = "Training Data Labelling Stage";
-        namedWindow(_WINDOW_NAME);
+        vid >> _currentFrame;
         imshow(_WINDOW_NAME, _currentFrame);
-
-        //set up mouse stuff
-        cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
-        const Scalar GREEN = Scalar(0,255,0);
-
+        redraw();
         switch (waitKey(0)) {
             case 32: {
-                Util::debugPrint("videoCollector", "spacebar event");
+                // TODO: save the image
+                // TODO: save the boxes and labels
+                Util::debugPrint("videoCollector", "Image Classified");
                 break;
             }
             case 27:
-                Util::debugPrint("videoCollector", "Exiting Image Collector");
+                Util::debugPrint("videoCollector", "See You Space Cowboy");
                 breakLoop = true;
                 break;
         }
-    }
-
-    if (remove(outFile) !=0 ) {
-        Util::errorPrint("ImageCollector :: videoCollectorLoop", "unable to delete temporary output file");
     }
     return 0;
 }
@@ -329,6 +339,8 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
             object.location = Rect(_pt1, _pt2);
             object.classLabel = _className;
             _boxes.push_back(object);
+            Util::debugPrint("ImageCollector::MouseCallback", "added box. New count:");
+            cout << _boxes.size() + "\n";
         }
 
     } else if (event == EVENT_RBUTTONDOWN) {
@@ -337,6 +349,7 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
         for ( int i = 0; i < _boxes.size(); i++) {
             if (_boxes[i].location.contains(Point(x,y)) ) {
                 vector<DetectedObject>::iterator iter(_boxes.begin() + i);
+                Util::debugPrint("ImageCollector::MouseCallback", "removed box.");
                 _boxes.erase(iter);
             }
         }
@@ -354,15 +367,16 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
 
 void ImageCollector::redraw() {
     const Scalar GREEN = Scalar(0,255,0);
+    Mat newFrame =_currentFrame.clone();
     // draw the rectangles
     for( DetectedObject box : _boxes) {
-        rectangle(_currentFrame, box.location, GREEN);
+        rectangle(newFrame, box.location, GREEN);
     }
     // draw the in-progress bounding box
     if (_drawBound) {
-        rectangle(_currentFrame, Rect(_pt1, _pt2), GREEN);
+        rectangle(newFrame, Rect(_pt1, _pt2), GREEN);
     }
-    imshow(_WINDOW_NAME, _currentFrame);
+    imshow(_WINDOW_NAME, newFrame);
 }
 
 Mat ImageCollector::crop() {

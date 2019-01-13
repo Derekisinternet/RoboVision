@@ -19,6 +19,8 @@ private:
 	void redraw();
 	bool getReady(std::string dirName);
 	cv::Mat crop();
+	int recordVideo(char fileName[], cv::VideoCapture cap);
+	int processFootage(char inFile[]);
 	// variables
 	int _fileIndex;
 	cv::Mat _currentFrame;
