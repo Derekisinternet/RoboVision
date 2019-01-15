@@ -21,6 +21,8 @@ private:
 	cv::Mat crop();
 	int recordVideo(char fileName[], cv::VideoCapture cap);
 	int processFootage(char inFile[]);
+	void saveCNNImage(std::string dir, cv::Mat image);
+	std::string buildClassLabel(struct DetectedObject object);
 	// variables
 	int _fileIndex;
 	cv::Mat _currentFrame;

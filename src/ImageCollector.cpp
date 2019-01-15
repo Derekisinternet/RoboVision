@@ -303,12 +303,33 @@ int ImageCollector::getLastImageIndex(string directory) {
     }
 }
 
+// default  way to save image
 void ImageCollector::saveImage(string dir, Mat image) {
     stringstream ss;
     ss << dir << "/" << _fileIndex << ".bmp";
     imwrite(ss.str(), image);
     printf("saving file: %d\n", _fileIndex);
     _fileIndex +=1;
+}
+
+// overloaded to also save CNN data
+void ImageCollector::saveCNNImage(string dirName, Mat image) {
+    // write _detectedObjects to file
+    vector<DetectedObject>::iterator it;
+    for (it = _boxes.begin(); it != _boxes.end(); it++ ) {
+        string line = buildClassLabel(*it);
+    }
+    saveImage(dirName, image);
+}
+
+string ImageCollector::buildClassLabel(struct DetectedObject object) {
+    stringstream ss;
+    int x;
+    int y;
+    int  width;
+    int height;
+    ss << "<" << object.classLabel << ">  <" << x << "> <" << y << "> <" << width << "> <" << height << ">";
+    return ss.str();
 }
 
 // controls mouse actions:
@@ -335,12 +356,11 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
             printf("   y = %d\n", _pt2.y);
             _drawBound = false;
 
-            DetectedObject object;
-            object.location = Rect(_pt1, _pt2);
-            object.classLabel = _className;
+            // TODO: is it right to give 100% confidence? IDK.
+            DetectedObject object(_className, Rect(_pt1, _pt2), 1.0);
             _boxes.push_back(object);
             Util::debugPrint("ImageCollector::MouseCallback", "added box. New count:");
-            cout << _boxes.size() + "\n";
+            cout << _boxes.size() << "\n";
         }
 
     } else if (event == EVENT_RBUTTONDOWN) {
