@@ -196,34 +196,6 @@ bool ImageCollector::getReady(string dirName) {
     }
 }
 
-// get the name of the last file in a directory
-int ImageCollector::getLastImageIndex(string directory) {
-    DIR *dir ;
-    struct dirent *entry;
-    int newIndex = 0;
-    if ((dir = opendir(directory.c_str())) != NULL) {
-             
-        while ((entry = readdir(dir))) {
-            char* name = entry->d_name;
-            string s = name;
-            // extract int from filename string:
-            int number = atoi(s.substr(0,-3).c_str());
-            if (number > newIndex) {
-                newIndex = number;
-            }
-        }
-        // printf("final index: %d\n", newIndex);
-        // printf("closing dir\n");
-        closedir(dir);
-        newIndex += 1;
-        return newIndex;
-    } 
-    else {
-        printf("getLastImageIndex(): cannot open directory %s", directory.c_str());
-        return -1;
-    }
-}
-
 // default  way to save image
 void ImageCollector::saveImage(string filePath, Mat image) {
     imwrite(filePath, image);
