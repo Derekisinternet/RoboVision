@@ -7,6 +7,7 @@ A computer vision app that uses the OpenCV framework.
 ------;
 
 * [OpenCV](https://github.com/opencv/opencv) version 4.0.1
+* [Darknet](https://pjreddie.com/darknet/)
 
 
 ## Setup

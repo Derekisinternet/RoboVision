@@ -7,7 +7,7 @@ sudo apt update
 echo "Running apt uprade . . . "
 sudo apt upgrade
 
-echo "Installing dependencies . . . "
+echo "Installing OpenCV dependencies . . . "
 sudo apt install build-essential\
      gcc cmake git libgtk2.0-dev pkg-config \
      libavcodec-dev libavformat-dev libswscale-dev \
@@ -20,3 +20,9 @@ cd opencv && mkdir build && cd build
 
 cmake -D CMAKE_BUILD_TYPE=RELEASE ..
 make
+
+echo "Installing Darknet . . ."
+cd $HOME && git clone https://github.com/pjreddie/darknet.git
+cd darknet && make
+
+echo "Installation finished. You're all set."
