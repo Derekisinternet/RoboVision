@@ -26,12 +26,10 @@ void mouseCallbackWrapper(int one, int two, int three, int four, void* ptr) {
 }
 
 ImageCollector::ImageCollector() {
-    _fileIndex = 0;
     _pt1.x = 0;
     _pt1.y = 0;
     _pt2.x = 0;
     _pt2.y = 0;
-    _established = false;
     _drawBound = false;
     _currentFrame = Mat();
     _WINDOW_NAME = "RoboVision Image Collector";
@@ -187,11 +185,6 @@ bool ImageCollector::getReady(string dirName) {
     //create a new folder with the argument name:
     if ( mkdir(dirName.c_str(), S_IRWXU) == -1) {
         if (errno == EEXIST) {
-            // dir already exists, get the index of the last image:
-            int newIndex = getLastImageIndex(dirName);
-            printf("folder already exists. Starting current index at %d\n", newIndex);
-            _fileIndex = newIndex;
-            _established = true;
             return true;         
         } else {
             printf("Error creating folder: %s",  dirName.c_str());

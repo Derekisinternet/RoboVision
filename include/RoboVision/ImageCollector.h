@@ -11,7 +11,6 @@ public:
 
 private:
 	// methods
-	int getLastImageIndex(std::string directory);
 	void saveImage(std::string filePath, cv::Mat image);
 	void redraw();
 	bool getReady(std::string dirName);
@@ -21,11 +20,9 @@ private:
 	void saveCNNImage(std::string filePath, cv::Mat image);
 	std::string buildClassLabel(struct DetectedObject object);
 	// variables
-	int _fileIndex;
 	cv::Mat _currentFrame;
 	cv::Point _pt1;
 	cv::Point _pt2;
-	bool _established;
 	bool _drawBound;
 	const char* _WINDOW_NAME;
 	std::string _className;
