@@ -6,13 +6,11 @@
 class ImageCollector {
 public:
 	ImageCollector();
-	int collectorLoop(std::string folderName);
 	int videoCollectorLoop(std::string folderName);
 	void mouseCallback(int event, int x, int y, int flags);
 
 private:
 	// methods
-	void drawCenteredBox(int width, int height);
 	int getLastImageIndex(std::string directory);
 	void saveImage(std::string filePath, cv::Mat image);
 	void redraw();

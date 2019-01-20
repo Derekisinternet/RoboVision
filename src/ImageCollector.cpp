@@ -38,67 +38,6 @@ ImageCollector::ImageCollector() {
     _boxes = vector<DetectedObject>();
 }
 
-void ImageCollector::drawCenteredBox(int width, int height) {
-    printf("Frame dimensions: %d x %d\n", _currentFrame.cols, _currentFrame.rows);
-    if (width < _currentFrame.cols && height < _currentFrame.rows) {
-        _pt1.x = ((_currentFrame.cols - width)/2);
-        _pt1.y = ((_currentFrame.rows - height)/2);
-        _pt2.x = _pt1.x + width;
-        _pt2.y = _pt1.y + height;
-    }
-}
-
-// int ImageCollector::collectorLoop(string folderName){
-//     // TODO: get rid of setting global var like this. It's because of the mouseCallback.
-//     _className = folderName;
-//     getReady(folderName);
-
-//     //open webcam
-//     VideoCapture cap(0);
-//     if (!cap.isOpened()) {
-//         cout << "camera not operational" << endl;
-//         return -1;
-//     } else {
-//         printf("Camera operational\n");
-//     }
-
-//     //create window
-//     namedWindow(_WINDOW_NAME, 1);
-
-//     //set callback
-//     cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,
-//                          (void *) this);
-
-//     const Scalar GREEN = Scalar(0,255,0);
-
-//     if (_established) {
-//         cap >> _currentFrame;
-//         setBoxDimensions(folderName);
-//     }
-
-//     for (;;) {
-//         cap >> _currentFrame;
-//         // imshow("RoboVision Image Collector", _currentFrame);
-//         redraw();
-
-//         // don't iterate until keypress
-//         switch(waitKey(30)) {
-//             // save image by pressing spacebar
-//             case 32: {
-//                 if (_boxes.size() > 0) {
-//                     saveImage(folderName, _fileIndex, _currentFrame);
-//                     _fileIndex++;
-//                 }
-//                 break;
-//             }
-//             // break the loop by pressing 'Esc'
-//             case 27:
-//                 break;
-//         }   
-//     }
-//     return 0;
-// }
-
 int ImageCollector::videoCollectorLoop(string folderName){
     getReady(folderName);
     _WINDOW_NAME = "RoboVision Video collector";
@@ -363,7 +302,6 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
         }
 
     } else if (event == EVENT_RBUTTONDOWN) {
-        printf("rightbutton click\n");
         // remove box if button click was inside it
         for ( int i = 0; i < _boxes.size(); i++) {
             if (_boxes[i].location.contains(Point(x,y)) ) {
