@@ -2,7 +2,7 @@
 *.swp
 *.vscode
 
-# ignore build and lib dirs (including tutorial projects)
+# ignore build dir
 build
 
 # ignore Mac-specific file stuff:
