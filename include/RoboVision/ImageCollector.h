@@ -12,16 +12,15 @@ public:
 
 private:
 	// methods
-	void setBoxDimensions(std::string dirName);
 	void drawCenteredBox(int width, int height);
 	int getLastImageIndex(std::string directory);
-	void saveImage(std::string dir, cv::Mat image);
+	void saveImage(std::string filePath, cv::Mat image);
 	void redraw();
 	bool getReady(std::string dirName);
 	cv::Mat crop();
 	int recordVideo(char fileName[], cv::VideoCapture cap);
 	int processFootage(char inFile[]);
-	void saveCNNImage(std::string dir, cv::Mat image);
+	void saveCNNImage(std::string filePath, cv::Mat image);
 	std::string buildClassLabel(struct DetectedObject object);
 	// variables
 	int _fileIndex;

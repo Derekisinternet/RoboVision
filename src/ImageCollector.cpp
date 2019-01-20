@@ -5,12 +5,14 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
+#include <fstream>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <regex>
+#include <ctime>
 #include "RoboVision/ImageCollector.h"
 #include "RoboVision/Util.h"
 #include "RoboVision/DetectedObject.h"
@@ -84,7 +86,8 @@ void ImageCollector::drawCenteredBox(int width, int height) {
 //             // save image by pressing spacebar
 //             case 32: {
 //                 if (_boxes.size() > 0) {
-//                     saveImage(folderName, _currentFrame);
+//                     saveImage(folderName, _fileIndex, _currentFrame);
+//                     _fileIndex++;
 //                 }
 //                 break;
 //             }
@@ -99,6 +102,7 @@ void ImageCollector::drawCenteredBox(int width, int height) {
 int ImageCollector::videoCollectorLoop(string folderName){
     getReady(folderName);
     _WINDOW_NAME = "RoboVision Video collector";
+    _className = folderName;
 
     //open webcam
     VideoCapture cap(0);
@@ -123,8 +127,6 @@ int ImageCollector::videoCollectorLoop(string folderName){
     if (processFootage(outFile) != 0 ) {
         return -1;
     }
-
-    
 
     if (remove(outFile) !=0 ) {
         Util::errorPrint("ImageCollector :: videoCollectorLoop", "unable to delete temporary output file");
@@ -211,9 +213,19 @@ int ImageCollector::processFootage(char inFile[]) {
         redraw();
         switch (waitKey(0)) {
             case 32: {
-                // TODO: save the image
-                // TODO: save the boxes and labels
-                Util::debugPrint("videoCollector", "Image Classified");
+                // Use a timestamp as a unique name
+                time_t rawTime;
+                // tm is a stuct with the different components of a date
+                struct tm * timeInfo;
+                char buffer[80];
+                time(&rawTime);
+                timeInfo = localtime(&rawTime);
+                strftime(buffer, 80, "/%Y%m%d%H%M%S", timeInfo);
+                string filePath(_className + buffer);
+                saveCNNImage(filePath, _currentFrame);
+                // Util::debugPrint("videoCollector", "Image Classified");
+
+                _boxes.clear();
                 break;
             }
             case 27:
@@ -252,29 +264,6 @@ bool ImageCollector::getReady(string dirName) {
     }
 }
 
-void ImageCollector::setBoxDimensions(string dirName) {
-    DIR *dir;
-    struct dirent *entry;
-    if ((dir = opendir(dirName.c_str())) != NULL) {
-        char* name;
-        while ((entry = readdir(dir))) {
-            name = entry->d_name;
-            if (name[0] != '.') {
-                break;
-            }
-        }
-        printf("retrieving class dimensions from sample image: %s\n", name);
-        //append file name to folder to give us a filepath:
-        dirName.insert(dirName.end(), '/');
-        dirName.append(name);
-        Mat sample = imread(dirName, IMREAD_COLOR);
-        int width = sample.cols;
-        int height = (sample.rows + 1); // account for how crop() works. Look it up.
-        printf("sample image dimensions: %d x %d\n", width, height);
-        drawCenteredBox(width, height);
-    }
-}
-
 // get the name of the last file in a directory
 int ImageCollector::getLastImageIndex(string directory) {
     DIR *dir ;
@@ -304,30 +293,40 @@ int ImageCollector::getLastImageIndex(string directory) {
 }
 
 // default  way to save image
-void ImageCollector::saveImage(string dir, Mat image) {
-    stringstream ss;
-    ss << dir << "/" << _fileIndex << ".bmp";
-    imwrite(ss.str(), image);
-    printf("saving file: %d\n", _fileIndex);
-    _fileIndex +=1;
+void ImageCollector::saveImage(string filePath, Mat image) {
+    imwrite(filePath, image);
+    string message = "saving file: " + filePath;
+    Util::debugPrint("ImageCollectopr::saveImage", message.c_str());
 }
 
 // overloaded to also save CNN data
-void ImageCollector::saveCNNImage(string dirName, Mat image) {
-    // write _detectedObjects to file
-    vector<DetectedObject>::iterator it;
-    for (it = _boxes.begin(); it != _boxes.end(); it++ ) {
-        string line = buildClassLabel(*it);
+void ImageCollector::saveCNNImage(string filePath, Mat image) {
+    if (_boxes.size() > 0) {
+        // create a char string for the file name
+        ofstream classFile;
+        string classFileName = filePath + ".txt";
+        string message = "saving file: " + classFileName;
+        Util::debugPrint("ImageCollector :: saveCNNImage", message.c_str());
+        classFile.open(classFileName, ios::out);
+        vector<DetectedObject>::iterator it;
+        for (it = _boxes.begin(); it != _boxes.end(); it++ ) {
+            string line = buildClassLabel(*it);
+            classFile << line;
+        }
+        classFile.close();
+        filePath += ".jpg";
+        saveImage(filePath, image);
     }
-    saveImage(dirName, image);
 }
 
+// Build a line for class file.
 string ImageCollector::buildClassLabel(struct DetectedObject object) {
     stringstream ss;
-    int x;
-    int y;
-    int  width;
-    int height;
+
+    int x = abs(_pt1.x - _pt2.x) / 2; // find center points
+    int y = abs(_pt1.y - _pt2.y) / 2;
+    int  width = object.location.width / _currentFrame.cols; // express size as percentage of whole image
+    int height = object.location.height /_currentFrame.rows;
     ss << "<" << object.classLabel << ">  <" << x << "> <" << y << "> <" << width << "> <" << height << ">";
     return ss.str();
 }
@@ -398,6 +397,7 @@ void ImageCollector::redraw() {
     }
     imshow(_WINDOW_NAME, newFrame);
 }
+
 
 Mat ImageCollector::crop() {
     // rectangle overlaps the top and left sides of the Mat,
