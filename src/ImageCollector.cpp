@@ -16,6 +16,7 @@
 #include "RoboVision/ImageCollector.h"
 #include "RoboVision/Util.h"
 #include "RoboVision/DetectedObject.h"
+#include "RoboVision/Display.h"
 
 using namespace cv;
 using namespace std;
@@ -143,6 +144,7 @@ int ImageCollector::processFootage(char inFile[]) {
 
     bool breakLoop;
     bool next;
+    _colors = Display::colorVector(_classNames.size());
     for(;;) {
         if (breakLoop) { break; }
         if (next) {
@@ -163,39 +165,48 @@ int ImageCollector::processFootage(char inFile[]) {
                 strftime(buffer, 80, "/%Y%m%d%H%M%S", timeInfo);
                 string filePath(_workingDir + buffer);
                 saveCNNImage(filePath, _currentFrame);
-                // Util::debugPrint("videoCollector", "Image Classified");
 
                 _boxes.clear();
                 next = true;
                 break;
             }
             case 27: {
-                Util::debugPrint("videoCollector", "See You Space Cowboy");
+                Util::debugPrint("ImageCollector", "See You Space Cowboy");
                 breakLoop = true;
                 break;
             }
             case 48: { // Number 0
-                string msg = "Setting current class to index 0: " + _classNames[0];
-                Util::debugPrint("videoCollector", msg.c_str() );
-                _currentClass = 0;
+                setNumber(0);
                 break;
             }
-            case 49: {
-                string msg = "Setting current class to index 1: " + _classNames[1];
-                Util::debugPrint("videoCollector", msg.c_str() );
-                _currentClass = 1;
+            case 49: { // Number 1
+                setNumber(1);
                 break;
             }
-
-            case 50: {
-                string msg = "Setting current class to index 2: " + _classNames[2];
-                Util::debugPrint("videoCollector", msg.c_str() );
-                _currentClass = 2;
+            case 50: { // Number 2
+                setNumber(2);
                 break;
+            }
+            case 51: { //etc.
+                setNumber(3);
+                break;
+            }
+            case 52: {
+                setNumber(4);
+                break;
+            }
+            case 53: {
+                setNumber(5);
             }
         }
     }
     return 0;
+}
+
+void ImageCollector::setNumber(int number) {
+    string msg = "Setting current class to index " + std::to_string(number) + ": " + _classNames[number];
+    Util::debugPrint("videoCollector", msg.c_str() );
+    _currentClass = number;
 }
 
 bool ImageCollector::getReady(string dirName) {
@@ -261,7 +272,7 @@ string ImageCollector::buildClassLabel(struct DetectedObject object) {
     float y = float (abs(_pt1.y - _pt2.y) / 2) / float (_currentFrame.rows);
     float  width = float (object.location.width) / float (_currentFrame.cols); // express size as percentage of whole image
     float height = float (object.location.height) /float (_currentFrame.rows);
-    ss << object.classLabel << " " << x << " " << y << " " << width << " " << height;
+    ss << object.classNumber << " " << x << " " << y << " " << width << " " << height << "\n";
     return ss.str();
 }
 
@@ -319,15 +330,14 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
 }
 
 void ImageCollector::redraw() {
-    const Scalar GREEN = Scalar(0,255,0);
     Mat newFrame =_currentFrame.clone();
     // draw the rectangles
     for( DetectedObject box : _boxes) {
-        rectangle(newFrame, box.location, GREEN);
+        rectangle(newFrame, box.location, _colors[box.classNumber]);
     }
     // draw the in-progress bounding box
     if (_drawBound) {
-        rectangle(newFrame, Rect(_pt1, _pt2), GREEN);
+        rectangle(newFrame, Rect(_pt1, _pt2), _colors[_currentClass]);
     }
     imshow(_WINDOW_NAME, newFrame);
 }

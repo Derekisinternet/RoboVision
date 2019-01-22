@@ -19,6 +19,7 @@ private:
 	int processFootage(char inFile[]);
 	void saveCNNImage(std::string filePath, cv::Mat image);
 	std::string buildClassLabel(struct DetectedObject object);
+	void setNumber(int number);
 	// variables
 	cv::Mat _currentFrame;
 	int _currentClass;
@@ -29,6 +30,7 @@ private:
 	const char* _WINDOW_NAME;
 	std::vector<std::string> _classNames;
 	std::vector<struct DetectedObject> _boxes;
+	std::vector<cv::Scalar> _colors;
 };
 
 #endif
