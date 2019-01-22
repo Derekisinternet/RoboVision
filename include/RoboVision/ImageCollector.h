@@ -21,11 +21,13 @@ private:
 	std::string buildClassLabel(struct DetectedObject object);
 	// variables
 	cv::Mat _currentFrame;
+	int _currentClass;
+	std::string _workingDir;
 	cv::Point _pt1;
 	cv::Point _pt2;
 	bool _drawBound;
 	const char* _WINDOW_NAME;
-	std::string _className;
+	std::vector<std::string> _classNames;
 	std::vector<struct DetectedObject> _boxes;
 };
 

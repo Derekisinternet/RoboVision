@@ -8,12 +8,14 @@
 struct DetectedObject {
   cv::Rect location;
   std::string classLabel;
+  int classNumber;
   float confidence;
 
   // constructors
   DetectedObject();
-  DetectedObject(std::string label, cv::Rect rect, float conf) 
+  DetectedObject(std::string label, int number, cv::Rect rect, float conf) 
     : classLabel(label)
+    , classNumber(number)
     , location(rect)
     , confidence(conf)
   { }

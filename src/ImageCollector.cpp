@@ -39,7 +39,6 @@ ImageCollector::ImageCollector() {
 int ImageCollector::videoCollectorLoop(string folderName){
     getReady(folderName);
     _WINDOW_NAME = "RoboVision Video collector";
-    _className = folderName;
 
     //open webcam
     VideoCapture cap(0);
@@ -143,10 +142,14 @@ int ImageCollector::processFootage(char inFile[]) {
     cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
 
     bool breakLoop;
+    bool next;
     for(;;) {
         if (breakLoop) { break; }
-        vid >> _currentFrame;
-        imshow(_WINDOW_NAME, _currentFrame);
+        if (next) {
+            vid >> _currentFrame;
+            imshow(_WINDOW_NAME, _currentFrame);
+            next = false;
+        }
         redraw();
         switch (waitKey(0)) {
             case 32: {
@@ -158,17 +161,38 @@ int ImageCollector::processFootage(char inFile[]) {
                 time(&rawTime);
                 timeInfo = localtime(&rawTime);
                 strftime(buffer, 80, "/%Y%m%d%H%M%S", timeInfo);
-                string filePath(_className + buffer);
+                string filePath(_workingDir + buffer);
                 saveCNNImage(filePath, _currentFrame);
                 // Util::debugPrint("videoCollector", "Image Classified");
 
                 _boxes.clear();
+                next = true;
                 break;
             }
-            case 27:
+            case 27: {
                 Util::debugPrint("videoCollector", "See You Space Cowboy");
                 breakLoop = true;
                 break;
+            }
+            case 48: { // Number 0
+                string msg = "Setting current class to index 0: " + _classNames[0];
+                Util::debugPrint("videoCollector", msg.c_str() );
+                _currentClass = 0;
+                break;
+            }
+            case 49: {
+                string msg = "Setting current class to index 1: " + _classNames[1];
+                Util::debugPrint("videoCollector", msg.c_str() );
+                _currentClass = 1;
+                break;
+            }
+
+            case 50: {
+                string msg = "Setting current class to index 2: " + _classNames[2];
+                Util::debugPrint("videoCollector", msg.c_str() );
+                _currentClass = 2;
+                break;
+            }
         }
     }
     return 0;
@@ -177,22 +201,28 @@ int ImageCollector::processFootage(char inFile[]) {
 bool ImageCollector::getReady(string dirName) {
     // if user didn't specify a classifier name, exit:
     if(dirName == ""){
-        printf("No Object name specified.\n");
+        printf("No Folder specified.\n");
         printf("Usage: imageCapture <name for image>");
         return false;
     }
+    _workingDir = dirName;
    
-    //create a new folder with the argument name:
-    if ( mkdir(dirName.c_str(), S_IRWXU) == -1) {
-        if (errno == EEXIST) {
-            return true;         
-        } else {
-            printf("Error creating folder: %s",  dirName.c_str());
-            return false;
+    // find class file
+    string classFile = _workingDir + "/classes.txt";
+    ifstream fStream;
+    fStream.open(classFile.c_str());
+    if (fStream.is_open()) {
+        string line;
+        int index = 0;
+        while (getline(fStream, line) ) {
+            _classNames.push_back(line);
+            printf("%d %s", index, line.c_str());
+            index++;
         }
-    } else {
-        printf("Created folder: %s\n",  dirName.c_str());
         return true;
+    } else {
+        Util::errorPrint("ImageCollector :: getReady", "unable to get ready.");
+        return false;
     }
 }
 
@@ -227,11 +257,11 @@ void ImageCollector::saveCNNImage(string filePath, Mat image) {
 string ImageCollector::buildClassLabel(struct DetectedObject object) {
     stringstream ss;
 
-    int x = abs(_pt1.x - _pt2.x) / 2; // find center points
-    int y = abs(_pt1.y - _pt2.y) / 2;
-    int  width = object.location.width / _currentFrame.cols; // express size as percentage of whole image
-    int height = object.location.height /_currentFrame.rows;
-    ss << "<" << object.classLabel << ">  <" << x << "> <" << y << "> <" << width << "> <" << height << ">";
+    float x = float (abs(_pt1.x - _pt2.x) / 2) / float (_currentFrame.cols); // find center point, divide by width
+    float y = float (abs(_pt1.y - _pt2.y) / 2) / float (_currentFrame.rows);
+    float  width = float (object.location.width) / float (_currentFrame.cols); // express size as percentage of whole image
+    float height = float (object.location.height) /float (_currentFrame.rows);
+    ss << object.classLabel << " " << x << " " << y << " " << width << " " << height;
     return ss.str();
 }
 
@@ -260,7 +290,8 @@ void ImageCollector::mouseCallback(int event, int x, int y, int flags) {
             _drawBound = false;
 
             // TODO: is it right to give 100% confidence? IDK.
-            DetectedObject object(_className, Rect(_pt1, _pt2), 1.0);
+            string label = _classNames[_currentClass];
+            DetectedObject object(label, _currentClass, Rect(_pt1, _pt2), 1.0);
             _boxes.push_back(object);
             Util::debugPrint("ImageCollector::MouseCallback", "added box. New count:");
             cout << _boxes.size() << "\n";

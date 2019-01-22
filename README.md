@@ -17,7 +17,7 @@ A computer vision app that uses the OpenCV framework.
 
 ### Windows
 
-* install linux
+* run a Debian flavor of linux
 * follow the `Linux` setup steps
 
 ## Training a Classifier
