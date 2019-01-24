@@ -52,7 +52,7 @@ int ImageCollector::videoCollectorLoop(string folderName){
     // create window
     namedWindow(_WINDOW_NAME, 1);
     // set callback
-    cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
+    // cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
 
     // record training footage
     char outFile[] = "output.avi";
@@ -198,15 +198,31 @@ int ImageCollector::processFootage(char inFile[]) {
             case 53: {
                 setNumber(5);
             }
+            case 54: {
+                setNumber(6);
+            }
+            case 55: {
+                setNumber(7);
+            }
+            case 56: {
+                setNumber(8);
+            }
+            case 57: {
+                setNumber(9);
+            }
         }
     }
     return 0;
 }
 
 void ImageCollector::setNumber(int number) {
-    string msg = "Setting current class to index " + std::to_string(number) + ": " + _classNames[number];
-    Util::debugPrint("videoCollector", msg.c_str() );
-    _currentClass = number;
+    if (number < _classNames.size()) {
+        string msg = "Setting current class to index " + std::to_string(number) + ": " + _classNames[number];
+        Util::debugPrint("videoCollector", msg.c_str() );
+        _currentClass = number;
+    } else {
+        Util::errorPrint("ImageCollector :: setNumber", "attempting to set class number greater than the number of classes. ");
+    } 
 }
 
 bool ImageCollector::getReady(string dirName) {
@@ -223,11 +239,12 @@ bool ImageCollector::getReady(string dirName) {
     ifstream fStream;
     fStream.open(classFile.c_str());
     if (fStream.is_open()) {
+        Util::debugPrint("ImageCollector :: getReady", "loaded class file:");
         string line;
         int index = 0;
         while (getline(fStream, line) ) {
             _classNames.push_back(line);
-            printf("%d %s", index, line.c_str());
+            printf("%d %s\n", index, line.c_str());
             index++;
         }
         return true;
@@ -267,9 +284,9 @@ void ImageCollector::saveCNNImage(string filePath, Mat image) {
 // Build a line for class file.
 string ImageCollector::buildClassLabel(struct DetectedObject object) {
     stringstream ss;
-
-    float x = float (abs(_pt1.x - _pt2.x) / 2) / float (_currentFrame.cols); // find center point, divide by width
-    float y = float (abs(_pt1.y - _pt2.y) / 2) / float (_currentFrame.rows);
+    Point center = object.getCenter();
+    float x = float (center.x) / float (_currentFrame.cols); // find center point, divide by width
+    float y = float (center.y) / float (_currentFrame.rows);
     float  width = float (object.location.width) / float (_currentFrame.cols); // express size as percentage of whole image
     float height = float (object.location.height) /float (_currentFrame.rows);
     ss << object.classNumber << " " << x << " " << y << " " << width << " " << height << "\n";

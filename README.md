@@ -23,6 +23,9 @@ A computer vision app that uses the OpenCV framework.
 ## Training a Classifier
 
 * `cd build/`
+* `mkdir myClassname`
+* Create a file called `classes.txt` formatted one class name per line.
+* `mv path/to/classes.txt myClassName/`
 * `./roboVision -c myClassName` where `myClassName` is the name of your class, not the literal string "myClassName".
 * this will open up a video capture window.
   * if the window is black, make sure you have a webcam and that it has adequate light to see.
