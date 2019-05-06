@@ -38,7 +38,10 @@ ImageCollector::ImageCollector() {
 }
 
 int ImageCollector::videoCollectorLoop(string folderName){
-    getReady(folderName);
+    bool ready = getReady(folderName);
+    if (!ready) {
+        return -1;
+    }
     _WINDOW_NAME = "RoboVision Video collector";
 
     //open webcam
@@ -144,6 +147,8 @@ int ImageCollector::processFootage(char inFile[]) {
 
     bool breakLoop;
     bool next;
+    string s = "number of classes: " + std::to_string(_classNames.size());
+    Util::debugPrint("ImageCollector::videoCollectorLoop", s.c_str());
     _colors = Display::colorVector(_classNames.size());
     for(;;) {
         if (breakLoop) { break; }
@@ -197,18 +202,23 @@ int ImageCollector::processFootage(char inFile[]) {
             }
             case 53: {
                 setNumber(5);
+                break;
             }
             case 54: {
                 setNumber(6);
+                break;
             }
             case 55: {
                 setNumber(7);
+                break;
             }
             case 56: {
                 setNumber(8);
+                break;
             }
             case 57: {
                 setNumber(9);
+                break;
             }
         }
     }
@@ -249,7 +259,8 @@ bool ImageCollector::getReady(string dirName) {
         }
         return true;
     } else {
-        Util::errorPrint("ImageCollector :: getReady", "unable to get ready.");
+        string error = "unable to open " + classFile;
+        Util::errorPrint("ImageCollector :: getReady", error.c_str());
         return false;
     }
 }
