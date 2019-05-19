@@ -24,7 +24,7 @@ A computer vision app that uses the OpenCV framework.
 
 * `cd build/`
 * `mkdir myClassname`
-* Create a file called `classes.txt` formatted one class name per line.
+* Create a file called `classes.txt`, with one class name per line.
 * `mv path/to/classes.txt myClassName/`
 * `./roboVision -c myClassName` where `myClassName` is the name of your class, not the literal string "myClassName".
 * this will open up a video capture window.

@@ -245,7 +245,7 @@ bool ImageCollector::getReady(string dirName) {
     _workingDir = dirName;
    
     // find class file
-    string classFile = _workingDir + "/classes.txt";
+    string classFile = _workingDir + "/classes.names";
     ifstream fStream;
     fStream.open(classFile.c_str());
     if (fStream.is_open()) {
