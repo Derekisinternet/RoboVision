@@ -45,21 +45,14 @@ int ImageCollector::videoCollectorLoop(string folderName){
     _WINDOW_NAME = "RoboVision Video collector";
 
     //open webcam
-    VideoCapture cap(0);
-    if (!cap.isOpened()) {
-        cout << "Camera not operational" << endl;
-        return -1;
-    } else {
-        printf("Camera operational\n");
-    }
+    VidCap vidya = newVidCap(0, 500, 333);
+    
     // create window
     namedWindow(_WINDOW_NAME, 1);
-    // set callback
-    // cv::setMouseCallback(_WINDOW_NAME, mouseCallbackWrapper,(void *) this);
 
     // record training footage
     char outFile[] = "output.avi";
-    if (recordVideo(outFile, cap) != 0 ) {
+    if (recordVideo(outFile, vidya) != 0 ) {
         return -1;
     }
 
@@ -74,15 +67,35 @@ int ImageCollector::videoCollectorLoop(string folderName){
     return 0;
 }
 
-int ImageCollector::recordVideo(char fileName[], VideoCapture cap) {
+
+ImageCollector::VidCap ImageCollector::newVidCap(int device, int cropWidth, int cropHeight) {
+    ImageCollector::VidCap output;
+    // open webcam
+    output.cap = VideoCapture(device);
+    if (!output.cap.isOpened()) {
+         Util::errorPrint("ImageCollector::newVidCap", "Camera notoperational\n");
+        return output;
+    } else {
+        printf("Camera operational\n");
+    }
+    //capture an image to set the crop frame
+    Mat img;
+    output.cap >> img;
+    int x = (img.cols - cropWidth)/2;
+    int y = (img.rows - cropHeight)/2;
+    output.crop = Rect(x, y, cropWidth, cropHeight);
+    return output;
+}
+
+int ImageCollector::recordVideo(char fileName[], VidCap viddy) {
     bool breakLoop;
     bool recording;
 
     // create a VideoWriter object.
-    double fps = cap.get(CAP_PROP_FPS);
+    double fps = viddy.cap.get(CAP_PROP_FPS);
     int codec = VideoWriter::fourcc('M','J','P','G');
-    int frame_width = cap.get(CAP_PROP_FRAME_WIDTH); 
-    int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT); 
+    int frame_width = viddy.cap.get(CAP_PROP_FRAME_WIDTH); 
+    int frame_height = viddy.cap.get(CAP_PROP_FRAME_HEIGHT); 
     VideoWriter video;
     
     if ( video.open(fileName, codec,fps, Size(frame_width, frame_height),true) ) {
@@ -97,7 +110,7 @@ int ImageCollector::recordVideo(char fileName[], VideoCapture cap) {
             break;
         }
 
-        cap >> _currentFrame;
+        viddy.cap >> _currentFrame;
         if (recording) {
             video.write(_currentFrame);
         }

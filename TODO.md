@@ -3,7 +3,8 @@
 ## Enhancements
 
 - [ ] implement YOLO algorithm
-    [x] create process to gather training images 
+    [x] create process to gather training images
+    [ ] create smaller images to make training easier
     [ ] create process to generate training and testing data for ingestion
       [x] create training and testing image manifests
       [ ] create a folder to store saved weights

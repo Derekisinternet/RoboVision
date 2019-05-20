@@ -31,6 +31,8 @@ for line in $(ls $folderPath | grep .jpg); do
   count=$( expr $count + 1)
 done
 echo Done.
+echo 'creating folder for saving weights . . . '
+mkdir "$folderpath/weights"
 echo "Training file size: $(du -h $trainFile | cut -f 1)"
 echo "Test file size: $(du -h $testFile | cut -f 1)"
 echo "Party on, Wayne."

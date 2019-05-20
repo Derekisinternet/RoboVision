@@ -8,14 +8,20 @@ public:
 	ImageCollector();
 	int videoCollectorLoop(std::string folderName);
 	void mouseCallback(int event, int x, int y, int flags);
+	// structs
+	struct VidCap {
+		cv::VideoCapture cap;
+		cv::Rect crop;
+	};
 
 private:
 	// methods
+	ImageCollector::VidCap newVidCap(int device, int cropWidth, int cropHeight);
 	void saveImage(std::string filePath, cv::Mat image);
 	void redraw();
 	bool getReady(std::string dirName);
 	cv::Mat crop();
-	int recordVideo(char fileName[], cv::VideoCapture cap);
+	int recordVideo(char fileName[], ImageCollector::VidCap viddy);
 	int processFootage(char inFile[]);
 	void saveCNNImage(std::string filePath, cv::Mat image);
 	std::string buildClassLabel(struct DetectedObject object);

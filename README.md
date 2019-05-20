@@ -36,5 +36,6 @@ A computer vision app that uses the OpenCV framework.
   * right-click inside a box to dismiss it.
 * Once you have identified all the objects in that frame, press `Spacebar` to iterate to the next frame. The app will save that frame into a folder named `myClassName` along with a text file with the coordinates of the bounding boxes.
   * if a frame has no bounding boxes when you iterate, that frame will not be saved.
-* ???
+* After that, run `scripts/make_dataset_file.sh` to create the necessary files for training a classifier.
+* ????
 * profit.
